@@ -1,0 +1,17 @@
+Subject: [PATCH] mm: use the HG8245 low-memory watermark policy from boot
+
+On this 50 MiB target a single pageblock boost can reserve 8 MiB while
+the kernel is unpacking the initramfs. Userspace sysctl runs too late.
+Keep the normal low-memory watermarks and the writable sysctl.
+
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -313,7 +313,7 @@
+ 
+ int min_free_kbytes = 1024;
+ int user_min_free_kbytes = -1;
+-static int watermark_boost_factor __read_mostly = 15000;
++static int watermark_boost_factor __read_mostly;
+ static int watermark_scale_factor = 10;
+ 
+ /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */

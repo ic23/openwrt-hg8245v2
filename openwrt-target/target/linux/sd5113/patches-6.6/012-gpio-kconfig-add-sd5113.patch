@@ -1,0 +1,19 @@
+--- a/drivers/gpio/Kconfig	2026-09-15 06:57:15.917842478 +0000
++++ b/drivers/gpio/Kconfig	2026-09-15 06:55:40.706244240 +0000
+@@ -471,6 +471,16 @@
+ 	select GPIO_GENERIC
+ 	select GENERIC_IRQ_CHIP
+ 
++config GPIO_SD5113
++	bool "HiSilicon SD5113 GPIO support"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	default ARCH_SD5113
++	help
++	  Say Y here for GPIO support on the HiSilicon SD5113 SoC
++	  (Huawei HG8245 ONT/router). 64 pins across 8 ports. Does NOT
++	  implement pinmux or GPIO interrupts - see
++	  drivers/gpio/gpio-sd5113.c for exactly what is confirmed.
++
+ config GPIO_MXS
+ 	bool "Freescale MXS GPIO support" if COMPILE_TEST
+ 	depends on ARCH_MXS || COMPILE_TEST

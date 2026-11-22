@@ -1,0 +1,10 @@
+--- a/arch/arm/Makefile	2023-10-30 02:31:08.000000000 +0000
++++ b/arch/arm/Makefile	2026-09-11 07:56:45.928914232 +0000
+@@ -214,6 +214,7 @@
+ machine-$(CONFIG_PLAT_SAMSUNG)		+= s3c
+ machine-$(CONFIG_ARCH_S5PV210)		+= s5pv210
+ machine-$(CONFIG_ARCH_SA1100)		+= sa1100
++machine-$(CONFIG_ARCH_SD5113)		+= sd5113
+ machine-$(CONFIG_ARCH_RENESAS)	 	+= shmobile
+ machine-$(CONFIG_ARCH_INTEL_SOCFPGA)	+= socfpga
+ machine-$(CONFIG_ARCH_STI)		+= sti

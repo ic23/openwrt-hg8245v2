@@ -1,0 +1,309 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/dts-v1/;
+
+#include <dt-bindings/clock/sd5113-crg.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Huawei HG8245";
+	compatible = "huawei,hg8245", "hisilicon,sd5113";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&intc>;
+
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+	};
+
+
+	/* CONFIRMED: arch/arm/mach-sd5113_v100_p01/core.c machine descriptor,
+	 * raw offset 0x174a8 in vendor vmlinux. nr=0x183, boot_params=0x90000100 */
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "earlycon console=ttyS0,115200n8";
+	};
+
+
+	memory@90000000 {
+		device_type = "memory";
+		/* STAGE 3: kernel gets 50 MB, like the vendor (`mem=50M`, CONFIRMED in
+		 * bootlog.txt). Physical bank is 64 MB, but the top 14 MB are unexplained
+		 * (vendor userspace uses BootCountAddr=0x933ff000 there). Widen later. */
+		reg = <0x90000000 0x03200000>;
+	};
+
+
+	ahb_fixed: clock-ahb {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <133250000>;
+		clock-output-names = "ahb_fixed";
+	};
+
+	/* Timer2 (/1) drops 5,029,302 counts over 515 Timer1 ticks at HZ=100. */
+	sys_timer2: clock-timer2 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <976563>;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu@0 {
+			/* CONFIRMED: boot log "CPU: ARMv6-compatible processor
+			 * [410fb767] revision 7 (ARMv6TEJ)" - ARM1176 family */
+			device_type = "cpu";
+			compatible = "arm,arm1176jzf-s";
+			clock-frequency = <533000000>; /* vendor ARMCORECLK constant */
+			reg = <0>;
+		};
+	};
+
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Everything below is memory-mapped SoC peripherals; simple-bus + identity
+		 * `ranges` is what makes the kernel create platform devices for them. */
+
+
+			flash@20000000 {
+				compatible = "cfi-flash"; /* HYPOTHESIS - см. комментарий выше про hisilicon-flash.c */
+				reg = <0x20000000 0x01000000>; /* CONFIRMED база и размер (16MB) */
+				bank-width = <2>; /* CONFIRMED (STAGE 10): vendor boot log "hisilicon: Found 1 x16 devices at 0x0 in 16-bit bank"; chip per its own message: NUMONYX JS28F128M29EWHA, 16 MiB; see patch 020 for its MaxBufWriteSize quirk */
+
+				partitions {
+					/* STAGE 3: every partition read-only for the first RAM-boot sessions so
+					 * nothing in the test session can write the flash. Remove per partition
+					 * once you deliberately want to write. */
+					compatible = "fixed-partitions";
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					partition@0 {
+						label = "boot";
+						read-only;
+						reg = <0x00000000 0x00040000>;
+					};
+					partition@40000 {
+						label = "flashcfg";
+						read-only;
+						reg = <0x00040000 0x00001000>;
+					};
+					syspara: partition@41000 {
+						label = "syspara";
+						read-only;
+						reg = <0x00041000 0x0001f000>;
+					};
+					partition@60000 {
+						label = "krnl";
+						read-only;
+						reg = <0x00060000 0x00180000>;
+					};
+					partition@1e0054 {
+						label = "rootfs";
+						read-only;
+						reg = <0x001e0054 0x008fffac>;
+					};
+					partition@c16fdc {
+						label = "minisystem";
+						read-only;
+						reg = <0x00c16fdc 0x00249024>;
+					};
+					partition@e60000 {
+						label = "jffs2cfg";
+						read-only;
+						reg = <0x00e60000 0x00180000>;
+					};
+					partition@fe0000 {
+						label = "reserved";
+						read-only;
+						reg = <0x00fe0000 0x00020000>;
+
+						nvmem-layout {
+							compatible = "fixed-layout";
+							#address-cells = <1>;
+							#size-cells = <1>;
+
+							wifi_cal: calibration@0 {
+								reg = <0 0xae0>;
+							};
+						};
+					};
+				};
+			};
+
+
+		intc: interrupt-controller@40000000 {
+			compatible = "hisilicon,sd5113-intc";
+			reg = <0x40000000 0x34>;
+			interrupt-controller;
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+		};
+
+
+		timer@16144000 {
+			compatible = "arm,sp804";
+			reg = <0x16144000 0x40>;
+			interrupts = <4>;
+			clocks = <&ahb_fixed>, <&sys_timer2>, <&ahb_fixed>;
+			clock-names = "timer0clk", "timer1clk", "apb_pclk";
+		};
+
+
+		uart0: serial@1614f000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x1614f000 0x100>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			interrupts = <17>; /* CONFIRMED from vendor boot log */
+			clocks = <&ahb_fixed>; /* 133.25 MHz, vendor UARTCLK constant, see ahb_fixed */
+			status = "okay";
+		};
+
+
+		uart1: serial@1614e000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x1614e000 0x100>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			interrupts = <16>; /* CONFIRMED from vendor boot log */
+			clocks = <&ahb_fixed>;
+			status = "disabled";
+		};
+
+
+		gpio0: gpio@16146000 {
+			compatible = "hisilicon,sd5113-gpio";
+			reg = <0x16146000 0x8000>;
+			hisilicon,crg = <&crg>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			status = "okay"; /* Stage 1: GPIO provider; no pins are driven at probe */
+		};
+
+
+		/* Адрес живьём подтверждён в boot-логе этого устройства (map_io
+		 * iotable dump: physical page 90448 = 0x16150000, len 0x1000). */
+		spi0: spi@16150000 {
+			compatible = "hisilicon,sd5113-spi"; /* no register-level driver yet */
+			reg = <0x16150000 0x64>;
+			clocks = <&crg SD5113_CLK_SPI>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled"; /* no working driver - placeholder node only */
+		};
+
+
+		i2c0: i2c@16151000 {
+			compatible = "hisilicon,sd5113-i2c"; /* no register-level driver yet */
+			reg = <0x16151000 0x100>;
+			clocks = <&crg SD5113_CLK_I2C>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled"; /* no working driver - placeholder node only */
+		};
+
+
+		mdio0: mdio@43b0a000 {
+			compatible = "hisilicon,sd5113-mdio";
+			reg = <0x43b0a000 0xb04>;
+			hisilicon,crg = <&crg>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay"; /* Stage 1 hardware probe: SD5113 MDIO bus */
+
+			switch0: switch@0 {
+				compatible = "hisilicon,sd5113-ar8316-probe"; /* read-only identification driver */
+				reg = <0>;
+				status = "okay"; /* Stage 1: read-only AR8316 ID/POSTRIP probe */
+
+			};
+		};
+
+
+
+		pci: pci@30000000 {
+			compatible = "hisilicon,sd5113-pci";
+			device_type = "pci";
+			hisilicon,crg = <&crg>;
+			reg = <0x30000000 0x1000>;	/* host controller register window */
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			interrupts = <21>;
+			bus-range = <0 0>;
+
+			/* CONFIRMED resource windows, from vendor static resource
+			 * descriptors in vmlinux (raw offset 0x2b2704) */
+			ranges = <0x01000000 0 0x31000000 0x31000000 0 0x00100000>, /* I/O */
+				 <0x02000000 0 0x38000000 0x38000000 0 0x00500000>, /* non-prefetch MEM */
+				 <0x42000000 0 0x32000000 0x32000000 0 0x00100000>; /* prefetch MEM */
+
+			interrupt-map-mask = <0xf800 0 0 7>;
+			interrupt-map = <0x1000 0 0 1 &pci_intx 0>;
+			status = "disabled";
+
+			pci_intx: interrupt-controller {
+				interrupt-controller;
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+			};
+
+			wifi@2,0 {
+				reg = <0x1000 0 0 0 0>;
+				nvmem-cells = <&wifi_cal>;
+				nvmem-cell-names = "calibration";
+			};
+		};
+
+
+		ehci@40010000 {
+			compatible = "generic-ehci";
+			reg = <0x40010000 0x1000>;
+			interrupts = <23>;
+			status = "disabled";
+		};
+
+
+		ohci@40020000 {
+			compatible = "generic-ohci";
+			reg = <0x40020000 0x1000>;
+			interrupts = <24>;
+			status = "disabled";
+		};
+
+
+		ethernet@42000010 {
+			compatible = "hisilicon,sd5113-eth";
+			reg = <0x42000010 0xbc>, <0x42100000 0xd8>,
+			      <0x42e00000 0x3c>, <0x42c80000 0x08>,
+			      <0x43188000 0x0e00>, <0x4318c000 0x100>,
+			      <0x43190000 0x100>;
+			reg-names = "glb", "cpurtx", "fe-cpu", "fe-mode",
+				    "fe-classifier", "fe-policy", "fe-dest";
+			hisilicon,board-gpio = <&gpio0>;
+			interrupts = <25>; /* CONFIRMED: confirmed-map.json ethernet.irq,
+					    * cross-checked against the real UART boot
+					    * log's PCI IRQ table context (unrelated
+					    * device, same IRQ controller numbering). */
+			status = "disabled";
+		};
+
+
+		crg: clock-controller@16140000 {
+			compatible = "hisilicon,sd5113-crg", "syscon";
+			reg = <0x16140000 0x100>;
+			#clock-cells = <1>;
+			status = "okay";
+		};
+	};
+};

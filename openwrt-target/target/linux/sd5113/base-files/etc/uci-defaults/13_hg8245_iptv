@@ -1,0 +1,23 @@
+#!/bin/sh
+[ "$(cat /tmp/sysinfo/board_name)" = huawei,hg8245 ] || exit 0
+[ -x /usr/sbin/igmpproxy ] || exit 0
+
+# The upstream feed ships an example source subnet equal to our LAN.
+if [ "$(uci -q get 'igmpproxy.@phyint[0].direction')" = upstream ] &&
+   [ "$(uci -q get 'igmpproxy.@phyint[0].altnet')" = 192.168.1.0/24 ]; then
+	uci set 'igmpproxy.@phyint[0].altnet=0.0.0.0/0'
+	uci set 'igmpproxy.@igmpproxy[0].quickleave=0'
+	uci commit igmpproxy
+fi
+
+. /lib/functions.sh
+enable_snooping() {
+	local name snooping
+	config_get name "$1" name
+	config_get snooping "$1" igmp_snooping
+	[ "$name" = br-lan ] && [ -z "$snooping" ] || return 0
+	uci set "network.$1.igmp_snooping=1"
+}
+config_load network
+config_foreach enable_snooping device
+uci commit network

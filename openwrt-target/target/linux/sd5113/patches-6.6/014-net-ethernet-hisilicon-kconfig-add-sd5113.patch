@@ -1,0 +1,24 @@
+--- a/drivers/net/ethernet/hisilicon/Kconfig	2026-09-27 08:22:17.490740828 +0000
++++ b/drivers/net/ethernet/hisilicon/Kconfig	2026-09-27 08:22:17.491848756 +0000
+@@ -18,6 +18,21 @@
+ 
+ if NET_VENDOR_HISILICON
+ 
++config NET_SD5113_ETH
++	tristate "HiSilicon SD5113 CPU-port Ethernet MAC support"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	select PHYLIB
++	help
++	  Support for the CPU-facing Ethernet MAC/DMA engine on the
++	  HiSilicon SD5113 SoC (Huawei HG8245 ONT/router). This is the
++	  net_device the AR8316 LAN switch (DSA or swconfig, see
++	  hisilicon-sd5113-hg8245.dts) attaches to as its CPU port -
++	  without this driver LAN traffic has nowhere to go even if the
++	  switch itself is fully working. Reverse-engineered from the
++	  vendor's hi_eth.ko - see
++	  drivers/net/ethernet/hisilicon/eth-sd5113.c for exactly what
++	  is CONFIRMED vs HYPOTHESIS. NEVER TESTED ON REAL HARDWARE.
++
+ config HIX5HD2_GMAC
+ 	tristate "Hisilicon HIX5HD2 Family Network Device Support"
+ 	select PHYLIB

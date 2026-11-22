@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-board-io.dts"
+
+#include "hisilicon-sd5113-hg8245-gpon-status.dtsi"
+
+&spi0 {
+	codec@0 {
+		huawei,read-ec-after-id;
+	};
+};

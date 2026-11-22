@@ -1,0 +1,84 @@
+--- a/drivers/net/phy/ar8216.c
++++ b/drivers/net/phy/ar8216.c
+@@ -1101,6 +1101,14 @@
+ {
+ 	u32 val, newval;
+ 
++	/* Standalone MDIO devices have already applied their board straps
++	 * in probe, before registering with swconfig.
++	 */
++	if (priv->pdev) {
++		priv->initialized = true;
++		return 0;
++	}
++
+ 	val = ar8xxx_read(priv, AR8316_REG_POSTRIP);
+ 
+ 	if (priv->phy->interface == PHY_INTERFACE_MODE_RGMII) {
+@@ -1142,6 +1150,43 @@
+ 
+ out:
+ 	priv->initialized = true;
++	return 0;
++}
++
++static int
++ar8316_mdio_setup(struct ar8xxx_priv *priv)
++{
++	struct device *dev = priv->pdev;
++	u32 postrip, leds[3];
++	int i, ret;
++
++	if (!chip_is_ar8316(priv))
++		return -ENODEV;
++	ret = of_property_read_u32(dev->of_node, "qca,postrip", &postrip);
++	if (ret)
++		return dev_err_probe(dev, ret, "missing board POSTRIP\n");
++
++	/* Program the link/activity rules before selecting the LED pins. */
++	if (of_find_property(dev->of_node, "qca,led-control", NULL)) {
++		ret = of_property_read_u32_array(dev->of_node, "qca,led-control",
++						 leds, ARRAY_SIZE(leds));
++		if (ret)
++			return ret;
++		for (i = 0; i < ARRAY_SIZE(leds); i++) {
++			u32 reg = 0xb0 + 4 * i;
++
++			ar8xxx_write(priv, reg, leds[i]);
++			if (ar8xxx_read(priv, reg) != leds[i])
++				return dev_err_probe(dev, -EIO, "LED control readback failed\n");
++		}
++	}
++
++	if (ar8xxx_read(priv, AR8316_REG_POSTRIP) != postrip)
++		ar8xxx_write(priv, AR8316_REG_POSTRIP, postrip);
++	if (ar8xxx_read(priv, AR8316_REG_POSTRIP) != postrip)
++		return dev_err_probe(dev, -EIO, "POSTRIP readback failed\n");
++
++	ar8xxx_rmw(priv, AR8216_REG_SERVICE_TAG, AR8216_SERVICE_TAG_M, ETH_P_8021Q);
+ 	return 0;
+ }
+ 
+@@ -2749,6 +2794,9 @@
+ 		.compatible = "qca,ar8236",
+ 		.data = &ar8236_chip,
+ 	}, {
++		.compatible = "qca,ar8316",
++		.data = &ar8316_chip,
++	}, {
+ 		.compatible = "qca,ar8327",
+ 		.data = &ar8327_chip,
+ 	},
+@@ -2784,6 +2832,12 @@
+ 	ret = ar8xxx_read_id(priv);
+ 	if (ret)
+ 		goto free_priv;
++
++	if (priv->chip == &ar8316_chip) {
++		ret = ar8316_mdio_setup(priv);
++		if (ret)
++			goto free_priv;
++	}
+ 
+ 	ret = ar8xxx_probe_switch(priv);
+ 	if (ret)

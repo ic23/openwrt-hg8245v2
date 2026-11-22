@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
+&switch0 {
+	compatible = "qca,ar8316";
+	/delete-property/ huawei,front-panel-leds;
+	/* GMII wiring and clock straps read back on the HG8245V2. */
+	qca,postrip = <0x80061b65>;
+	qca,led-control = <0xcf35cf35 0xcf35cf35 0xcf35cf35>;
+};

@@ -1,0 +1,150 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+. /lib/functions.sh
+slic=/sys/bus/spi/devices/spi0.0
+pon=/sys/bus/platform/devices/420000a0.gpon-rx
+
+phone() {
+	local state hook service mode=off
+	read -r service 2>/dev/null < "$slic/service" || service=off
+	case "$service" in
+	on|media|intercom)
+		if read -r state hook 2>/dev/null < "$slic/$1"; then
+			case "$state:$hook" in
+			disconnect:*) ;;
+			incoming:*|ring:*|*:off-hook) mode=250/250 ;;
+			*:on-hook) mode=on ;;
+			esac
+		fi ;;
+	esac
+	event_mode=$mode
+}
+
+optics() {
+	local los lof loss_mode=off pon_mode=off
+	if read -r los 2>/dev/null < "$pon/los"; then
+		case "$los" in
+		1) loss_mode=1000/1000 ;;
+		0) if read -r lof 2>/dev/null < "$pon/lof" && [ "$lof" = 0 ]; then
+			# RX framing is present. OpenWrt does not yet report ONU state O5.
+			pon_mode=250/250
+		   fi ;;
+		esac
+	fi
+	case "$1" in
+	los) event_mode=$loss_mode ;;
+	pon) event_mode=$pon_mode ;;
+	esac
+}
+
+usb() {
+	local path n count=0 total=0 mode=off
+	for path in /sys/bus/usb/devices/[0-9]*-*/urbnum; do
+		case "$path" in *:*) continue;; esac
+		read -r n 2>/dev/null < "$path" || continue
+		count=$((count + 1))
+		total=$((total + n))
+	done
+	if [ "$count" -gt 0 ]; then
+		mode=on
+		if [ "$count" = "$usb_count" ] && [ "$total" != "$usb_total" ]; then
+			mode=250/250
+		fi
+	fi
+	usb_count=$count
+	usb_total=$total
+	event_mode=$mode
+}
+
+wps() {
+	local dev state phy conf mode=off
+	for dev in /sys/class/net/*/phy80211; do
+		[ -e "$dev" ] || continue
+		phy=$(readlink -f "$dev") || continue
+		dev=${dev%/phy80211}
+		# An idle WPS-capable hostapd also answers wps_status when the
+		# feature is disabled on the BSS. Check its effective config.
+		for conf in /var/run/hostapd-"${phy##*/}"*.conf; do
+			[ -r "$conf" ] || continue
+			awk -F= -v bss="${dev##*/}" '
+				$1 == "interface" || $1 == "bss" { selected = ($2 == bss) }
+				selected && $1 == "wps_state" && ($2 == 1 || $2 == 2) { enabled = 1 }
+				END { exit !enabled }
+			' "$conf" && break
+			conf=
+		done
+		[ -n "$conf" ] && [ -r "$conf" ] || continue
+		state=$(ubus -t 1 call "hostapd.${dev##*/}" wps_status 2>/dev/null) || continue
+		mode=on
+		case "$state" in
+		*'"Active"'*) mode=250/250; break ;;
+		esac
+	done
+	event_mode=$mode
+}
+
+backup_power() {
+	local supply type status mode=off
+	for supply in /sys/class/power_supply/*; do
+		read -r type 2>/dev/null < "$supply/type" || continue
+		[ "$type" = Battery ] || continue
+		read -r status 2>/dev/null < "$supply/scope" && [ "$status" = System ] || continue
+		if read -r status 2>/dev/null < "$supply/status" && [ "$status" = Discharging ]; then
+			mode=on
+			break
+		fi
+	done
+	event_mode=$mode
+}
+
+collect_rule() {
+	local sysfs trigger rule kept
+	config_get sysfs "$1" sysfs
+	config_get trigger "$1" trigger
+	case "$sysfs" in ''|.|..|*[!A-Za-z0-9:._-]*) return ;; esac
+	# Match the stock LED service when several sections select the same lamp.
+	for rule in $rules; do
+		[ "${rule%/*}" = "$sysfs" ] || kept="$kept $rule"
+	done
+	rules=$kept
+	case "$trigger" in
+	hg8245-tel1|hg8245-tel2|hg8245-los|hg8245-pon|hg8245-wps|hg8245-usb|hg8245-bbu)
+		rules="$rules $sysfs/${trigger#hg8245-}" ;;
+	esac
+}
+
+display() {
+	local dir="/sys/class/leds/$1" event="$2" old want max
+	[ -w "$dir/pattern" ] || return 0
+	read -r max < "$dir/max_brightness" || return
+	case "$event" in
+	tel1|tel2) phone "$event" ;;
+	los|pon) optics "$event" ;;
+	wps) wps ;;
+	bbu) backup_power ;;
+	usb) event_mode=$usb_mode ;;
+	esac
+	case "$event_mode" in
+	off) want="0 60000 0 60000" ;;
+	on) want="$max 60000 $max 60000" ;;
+	*) want="$max ${event_mode%/*} $max 0 0 ${event_mode#*/} 0 0" ;;
+	esac
+	IFS= read -r old < "$dir/pattern"
+	[ "$old" = "$want" ] || echo "$want" > "$dir/pattern"
+}
+
+reload=1
+while :; do
+	if [ "$reload" = 1 ] || [ -e /var/run/hg8245-led-reload ]; then
+		rm -f /var/run/hg8245-led-reload
+		rules=
+		config_load system
+		config_foreach collect_rule led
+		reload=0
+	fi
+	case "$rules " in *'/usb '*) usb; usb_mode=$event_mode ;; esac
+	for rule in $rules; do
+		display "${rule%/*}" "${rule#*/}"
+	done
+	sleep 1
+done

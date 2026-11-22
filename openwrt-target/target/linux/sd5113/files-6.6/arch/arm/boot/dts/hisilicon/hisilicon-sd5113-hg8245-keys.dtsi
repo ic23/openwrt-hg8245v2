@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	gpio-keys {
+		compatible = "gpio-keys-polled";
+		label = "HG8245V2 lab keys";
+		poll-interval = <20>;
+
+		/*
+		 * Board 1, PCB 3 only. Use lab codes as well as lab labels:
+		 * OpenWrt's button hotplug driver maps codes, not labels, to
+		 * actions. Use the native polled input driver with evdev.
+		 */
+		button-reset {
+			label = "lab-reset";
+			linux,code = <KEY_F13>;
+			gpios = <&stock_gpio 34 GPIO_ACTIVE_LOW>;
+			debounce-interval = <60>;
+		};
+
+		button-wlan {
+			label = "lab-wlan";
+			linux,code = <KEY_F14>;
+			gpios = <&stock_gpio 35 GPIO_ACTIVE_LOW>;
+			debounce-interval = <60>;
+		};
+
+		button-wps {
+			label = "lab-wps";
+			linux,code = <KEY_F15>;
+			gpios = <&stock_gpio 12 GPIO_ACTIVE_LOW>;
+			debounce-interval = <60>;
+		};
+	};
+};

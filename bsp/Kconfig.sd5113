@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# SUPERSEDED (Stage 4). The real, build-tested entry is
+# arch/arm/mach-sd5113/Kconfig (mirrored in openwrt-target/.../files-6.6/).
+# The previous content of this file used symbols that do not exist in the tree
+# (CPU_ARM1176, SD5113_PCI, SD5113_UART, SD5113_CRG) and was removed so it cannot
+# be applied by mistake.

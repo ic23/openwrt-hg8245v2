@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/* Stock B176 opens USB1 with GPIO58 high on board version 1. */
+&gpio0 {
+	usb1-enable {
+		gpio-hog;
+		gpios = <58 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "usb1-enable";
+	};
+};
+
+&{/soc/ehci@40010000} {
+	status = "okay";
+};
+
+&{/soc/ohci@40020000} {
+	status = "okay";
+};

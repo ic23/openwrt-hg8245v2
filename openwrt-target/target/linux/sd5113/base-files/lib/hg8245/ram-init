@@ -1,0 +1,30 @@
+#!/bin/sh
+export INITRAMFS=1
+export PATH=/bin:/sbin
+
+rescue() {
+	echo "HG8245 RAM init failed: $*" >&2
+	exec /bin/sh -i
+}
+
+cd / || rescue "cd /"
+stage=/new_root
+mkdir "$stage" && mount -t tmpfs tmpfs "$stage" || rescue "mount tmpfs"
+mkdir "$stage/usr" "$stage/lib" || rescue "create staging directories"
+
+# Release the old pages of each subtree before copying the next one.
+# Keep /bin, /sbin and the dynamic loader available through switch_root.
+for entry in /usr/* /lib/firmware /lib/modules; do
+	[ -e "$entry" ] || [ -L "$entry" ] || continue
+	mv "$entry" "$stage$entry" || rescue "move $entry"
+done
+
+for entry in /* /.[!.]* /..?*; do
+	[ "$entry" != "$stage" ] || continue
+	[ -e "$entry" ] || [ -L "$entry" ] || continue
+	cp -a "$entry" "$stage/" || rescue "copy $entry"
+done
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+echo "HG8245 RAM init: switching to tmpfs"
+exec switch_root "$stage" /sbin/init

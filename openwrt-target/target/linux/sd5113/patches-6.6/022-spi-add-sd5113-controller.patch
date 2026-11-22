@@ -1,0 +1,26 @@
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -57,6 +57,13 @@
+ 
+ comment "SPI Master Controller Drivers"
+ 
++config SPI_SD5113
++	tristate "HiSilicon SD5113 SPI controller"
++	depends on ARCH_SD5113 && GPIO_SD5113 && OF
++	select MFD_SYSCON
++	help
++	  Enable the native half-duplex SPI controller of the SD5113.
++
+ config SPI_ALTERA
+ 	tristate "Altera SPI Controller platform driver"
+ 	select SPI_ALTERA_CORE
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -13,6 +13,7 @@
+ obj-$(CONFIG_SPI_LOOPBACK_TEST)		+= spi-loopback-test.o
+ 
+ # SPI master controller drivers (bus)
++obj-$(CONFIG_SPI_SD5113)			+= spi-sd5113.o
+ obj-$(CONFIG_SPI_ALTERA)		+= spi-altera-platform.o
+ obj-$(CONFIG_SPI_ALTERA_CORE)		+= spi-altera-core.o
+ obj-$(CONFIG_SPI_ALTERA_DFL)		+= spi-altera-dfl.o

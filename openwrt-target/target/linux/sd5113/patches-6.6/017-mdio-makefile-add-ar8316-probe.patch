@@ -1,0 +1,8 @@
+--- a/drivers/net/mdio/Makefile
++++ b/drivers/net/mdio/Makefile
+@@ -14,4 +14,5 @@
+ obj-$(CONFIG_MDIO_GPIO)			+= mdio-gpio.o
+ obj-$(CONFIG_MDIO_SD5113)		+= mdio-sd5113.o
++obj-$(CONFIG_AR8316_SD5113_PROBE)	+= ar8316-sd5113-probe.o
+ obj-$(CONFIG_MDIO_HISI_FEMAC)		+= mdio-hisi-femac.o
+ obj-$(CONFIG_MDIO_I2C)			+= mdio-i2c.o

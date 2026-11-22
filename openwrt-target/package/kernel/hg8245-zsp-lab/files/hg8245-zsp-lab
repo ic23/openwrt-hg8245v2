@@ -1,0 +1,34 @@
+#!/bin/sh
+
+if [ "$#" -ne 2 ] || [ "$2" != tel-unplugged ]; then
+	echo 'Use only in the RAM lab image with both TEL sockets empty.' >&2
+	exit 2
+fi
+case "$1" in
+	boot) set -- boot=1 ;;
+	boot-id) set -- boot=1 codec=1 ;;
+	tdm-id) set -- boot=1 codec=1 tdm=1 ;;
+	pcm-id) set -- boot=1 codec=1 tdm=1 pcm=1 ;;
+	spi-chain) set -- boot=1 codec=1 tdm=1 pcm=1 spi_core=1 ;;
+	version) set -- boot=1 version=1 ;;
+	*) echo 'Usage: hg8245-zsp-lab {boot|boot-id|tdm-id|pcm-id|spi-chain|version} tel-unplugged' >&2; exit 2 ;;
+esac
+
+probe=hg8245_zsp_stage
+module="/lib/modules/$(uname -r)/$probe.ko"
+if [ "$(cat /tmp/sysinfo/board_name)" != huawei,hg8245 ] ||
+   ! ubus call system board | grep -Eq '"rootfs_type"[[:space:]]*:[[:space:]]*"initramfs"' ||
+   grep -q "^$probe " /proc/modules || [ ! -r "$module" ]; then
+	echo 'ZSP lab: wrong system, module missing or already loaded' >&2
+	exit 1
+fi
+
+echo 'ZSP lab: beginning one-shot boot'
+rc=0
+insmod "$module" "$@" || rc=$?
+dmesg | grep -E 'hg8245-zsp:|hg8245-zsp-pcm:|hg8245-slicprobe:|hg8245-le88226-id' | tail -n 28
+if [ "$rc" -eq 0 ]; then
+	rmmod "$probe" || exit 1
+fi
+echo "ZSP lab: done, status=$rc; reboot before another attempt"
+exit "$rc"

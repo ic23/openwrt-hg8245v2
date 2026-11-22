@@ -1,0 +1,12 @@
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -92,6 +92,9 @@
+ obj-$(CONFIG_ARCH_BERLIN)		+= berlin/
+ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci/
+ obj-$(CONFIG_ARCH_HISI)			+= hisilicon/
++ifeq ($(CONFIG_ARCH_HISI),)
++obj-$(CONFIG_COMMON_CLK_SD5113)		+= hisilicon/
++endif
+ obj-y					+= imgtec/
+ obj-y					+= imx/
+ obj-y					+= ingenic/

@@ -1,0 +1,30 @@
+#!/bin/sh
+# This rdinit runs from the kernel's unpacked archive, before procd or MTD mounts.
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+[ "$$" -eq 1 ] || exit 1
+mount -t proc proc /proc || exit 1
+grep -qw 'rdinit=/lib/hg8245/installer-init' /proc/cmdline &&
+	awk '$2 == "/" && $3 != "rootfs" && $3 != "ramfs" {exit 1}' /proc/mounts || exit 1
+umount /proc || exit 1
+
+# Keep the wired management network and sysupgrade within the board's 50 MiB.
+for service in /etc/rc.d/S*; do
+	case "${service##*/}" in
+		S10boot|S10system|S11sysctl|S12log|S19dnsmasq|S20network|S95done) ;;
+		*) rm -f "$service" ;;
+	esac
+done
+for conf in /etc/modules.d/* /etc/modules-boot.d/*; do
+	case "${conf##*/}" in
+		15-libphy|41-swconfig|43-switch-ar8xxx|mdio-devres) ;;
+		*) rm -f "$conf" ;;
+	esac
+done
+for mod in /lib/modules/*/*.ko; do
+	case "${mod##*/}" in
+		libphy.ko|swconfig.ko|ar8xxx.ko|mdio-devres.ko) ;;
+		*) rm -f "$mod" ;;
+	esac
+done
+rm -f /usr/sbin/hg8245-sip /usr/sbin/hostapd /lib/firmware/hg8245/zsp_min.out
+exec /lib/hg8245/ram-init

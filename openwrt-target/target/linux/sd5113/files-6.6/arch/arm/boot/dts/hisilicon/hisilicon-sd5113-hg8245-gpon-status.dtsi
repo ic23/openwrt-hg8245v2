@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-only
+&{/soc} {
+	gpon-rx@420000a0 {
+		compatible = "hisilicon,sd5113-gpon-rx-queue", "hisilicon,sd5113-gpon-rx-status";
+		reg = <0x420000a0 4>, <0x4320000c 4>, <0x43200044 4>, <0x43200080 4>,
+		      <0x43200034 4>, <0x43200084 4>;
+		reg-names = "los", "lof", "ploam-rx", "ploam-crc-errors",
+			    "ploam-pending", "ploam-dropped";
+	};
+};

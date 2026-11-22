@@ -1,0 +1,138 @@
+From: sd5113 port
+Subject: [PATCH] ARM: compressed: feed the SD5113 watchdog during decompression
+
+The SD5113 hardware watchdog is already running when U-Boot starts the zImage
+(U-Boot feeds it from 25 places; vendor kernel from a 50-jiffy timer; both write
+0x55aa5a5a then 0xaa55a5a5 to physical 0x420000dc). Feed it at zImage entry, in
+the image relocation copy loop, at the start of decompress_kernel() and from the
+XZ hooks. All of it is under CONFIG_ARCH_SD5113.
+---
+--- a/arch/arm/boot/compressed/misc.h
++++ b/arch/arm/boot/compressed/misc.h
+@@ -3,6 +3,24 @@
+ 
+ #include <linux/compiler.h>
+ 
++#ifdef CONFIG_ARCH_SD5113
++/*
++ * SD5113 (Huawei HG8245): a hardware watchdog is already running when U-Boot
++ * hands over (U-Boot feeds it from 25 call sites, the vendor kernel from a
++ * 50-jiffy timer). Feeding = writing the key pair below to physical 0x420000dc;
++ * both U-Boot's feed routine and the vendor kernel do exactly this. The
++ * decompressor runs with the MMU off or identity-mapped, so the physical
++ * address is directly usable.
++ */
++static inline void sd5113_wdt_kick(void)
++{
++	volatile unsigned int *key = (volatile unsigned int *)0x420000dc;
++
++	*key = 0x55aa5a5a;
++	*key = 0xaa55a5a5;
++}
++#endif
++
+ void error(char *x) __noreturn;
+ extern unsigned long free_mem_ptr;
+ extern unsigned long free_mem_end_ptr;
+--- a/arch/arm/boot/compressed/decompress.c
++++ b/arch/arm/boot/compressed/decompress.c
+@@ -8,6 +8,23 @@
+ #include <asm/string.h>
+ #include "misc.h"
+ 
++#if defined(CONFIG_ARCH_SD5113) && !defined(CONFIG_KERNEL_XZ)
++#warning "SD5113: the watchdog kick hooks only cover CONFIG_KERNEL_XZ; with another compression a large zImage will outrun the hardware watchdog"
++#endif
++
++#ifdef CONFIG_ARCH_SD5113
++/* Feed the watchdog from inside the (long) XZ decode, see misc.h. */
++/*
++ * Deliberately NOT static: the ARM decompressor relocates itself and reaches
++ * its data through the GOT, so arch/arm/boot/compressed/Makefile
++ * (check_for_bad_syms) rejects any local .bss/.data symbol in the final link.
++ */
++unsigned int sd5113_xz_ticks;
++#define XZ_BOOT_KICK() \
++	do { if (!(++sd5113_xz_ticks & 0x3fff)) sd5113_wdt_kick(); } while (0)
++#define XZ_BOOT_KICK_BULK() sd5113_wdt_kick()
++#endif
++
+ #define STATIC static
+ #define STATIC_RW_DATA	/* non-static please */
+ 
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -144,6 +144,9 @@
+ 	ep93xx_decomp_setup();
+ #endif
+ 	arch_decomp_setup();
++#ifdef CONFIG_ARCH_SD5113
++	sd5113_wdt_kick();
++#endif
+ 
+ 	putstr("Uncompressing Linux...");
+ 	ret = do_decompress(input_data, input_data_end - input_data,
+--- a/arch/arm/boot/compressed/head.S
++++ b/arch/arm/boot/compressed/head.S
+@@ -77,6 +77,29 @@
+ #endif
+ #endif
+ 
++
++#ifdef CONFIG_ARCH_SD5113
++		/*
++		 * Feed the SD5113 hardware watchdog (key pair -> phys 0x420000dc),
++		 * see misc.h. No literal pool on purpose: this file is far too
++		 * long for the assembler to place one within range.
++		 */
++		.macro	sd5113_wdt_kick, ra, rb
++		mov	\ra, #0x42000000
++		orr	\ra, \ra, #0xdc
++		mov	\rb, #0x55000000
++		orr	\rb, \rb, #0x00aa0000
++		orr	\rb, \rb, #0x00005a00
++		orr	\rb, \rb, #0x0000005a
++		str	\rb, [\ra]
++		mov	\rb, #0xaa000000
++		orr	\rb, \rb, #0x00550000
++		orr	\rb, \rb, #0x0000a500
++		orr	\rb, \rb, #0x000000a5
++		str	\rb, [\ra]
++		.endm
++#endif
++
+ 		.macro	kputc,val
+ 		mov	r0, \val
+ 		bl	putc
+@@ -228,6 +251,9 @@
+ #endif
+ 		mov	r7, r1			@ save architecture ID
+ 		mov	r8, r2			@ save atags pointer
++#ifdef CONFIG_ARCH_SD5113
++		sd5113_wdt_kick	r1, r2		@ r1/r2 are saved in r7/r8 above
++#endif
+ 
+ #ifndef CONFIG_CPU_V7M
+ 		/*
+@@ -522,10 +548,21 @@
+ 		dbgkc	r5, r6, r10, r9
+ #endif
+ 
++#ifdef CONFIG_ARCH_SD5113
++		sd5113_wdt_kick	r0, r1
++1:		ldmdb	r6!, {r0 - r3, r10 - r12, lr}
++		stmdb	r9!, {r0 - r3, r10 - r12, lr}
++		tst	r6, #0xff00		@ roughly once per 64K of copy ...
++		bne	2f
++		sd5113_wdt_kick	r0, r1		@ ... feed the watchdog (r0-r3 are free again)
++2:		cmp	r6, r5
++		bhi	1b
++#else
+ 1:		ldmdb	r6!, {r0 - r3, r10 - r12, lr}
+ 		cmp	r6, r5
+ 		stmdb	r9!, {r0 - r3, r10 - r12, lr}
+ 		bhi	1b
++#endif
+ 
+ 		/* Preserve offset to relocated code. */
+ 		sub	r6, r9, r6

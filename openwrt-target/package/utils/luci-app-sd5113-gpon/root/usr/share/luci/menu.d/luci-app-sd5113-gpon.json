@@ -1,0 +1,31 @@
+{
+  "admin/network/gpon": {
+    "title": "GPON",
+    "order": 65,
+    "action": {
+      "type": "view",
+      "path": "hg8245/gpon"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-sd5113-gpon"
+      ]
+    }
+  },
+  "admin/network/iptv": {
+    "title": "IPTV",
+    "order": 66,
+    "action": {
+      "type": "view",
+      "path": "hg8245/iptv"
+    },
+    "depends": {
+      "acl": [
+        "hg8245-iptv"
+      ],
+      "fs": {
+        "/usr/sbin/igmpproxy": "executable"
+      }
+    }
+  }
+}

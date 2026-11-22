@@ -1,0 +1,8 @@
+--- a/arch/arm/boot/dts/hisilicon/Makefile	2023-10-30 02:31:08.000000000 +0000
++++ b/arch/arm/boot/dts/hisilicon/Makefile	2026-09-11 07:56:54.102896112 +0000
+@@ -11,3 +11,5 @@
+ 	hisi-x5hd2-dkb.dtb
+ dtb-$(CONFIG_ARCH_SD5203) += \
+ 	sd5203.dtb
++dtb-$(CONFIG_ARCH_SD5113) += \
++	hisilicon-sd5113-hg8245.dtb

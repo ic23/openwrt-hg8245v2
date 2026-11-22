@@ -1,0 +1,24 @@
+--- a/drivers/irqchip/Kconfig	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/irqchip/Kconfig	2026-09-11 08:10:20.880115956 +0000
+@@ -149,6 +149,21 @@
+ 	select GENERIC_IRQ_CHIP
+ 	select IRQ_DOMAIN_HIERARCHY
+ 
++config SD5113_INTC
++	bool "HiSilicon SD5113 interrupt controller (fallback driver)"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	default ARCH_SD5113
++	help
++	  Documented FALLBACK driver for the SD5113 primary interrupt
++	  controller. The DTS for this board lists "snps,dw-apb-ictl"
++	  FIRST in its compatible property (this register layout was
++	  found to be identical to that mainline driver, see
++	  drivers/irqchip/irq-sd5113.c for the full comparison) - so
++	  DW_APB_ICTL is what actually gets used unless that DTS
++	  string is changed. Kept as a hand-verified fallback in case
++	  the mainline driver's IRQ-count autodetection misbehaves
++	  on real hardware.
++
+ config FARADAY_FTINTC010
+ 	bool
+ 	select IRQ_DOMAIN

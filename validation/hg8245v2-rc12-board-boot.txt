@@ -1,0 +1,298 @@
+U-Boot 1.1.4 (Dec  8 2011 - 14:02:37)
+
+U-Boot code: 90500000 -> 9051E6D0  BSS: -> 90554FB8
+RAM Configuration:
+Bank #0: 90000000 64 MB
+Flash: 16 MB
+*** Warning - bad CRC, using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+
+Extend LSW IS AR8316
+Initialize broadcast table ... ok
+CPURTx Driver For Pilot <Board-A>!
+### JFFS2 loading 'fsok' to 0x904bfe34
+Scanning JFFS2 FS: . done.
+### JFFS2 load complete: 2 bytes loaded to 0x904bfe34
+No board type file!
+ui_board_id = 1
+[main.c__2899]::Magic1:0x5a5a5a5a, magic2 0xa5a5a5a5, count 0, flag 0, MainAreaOK 0, slaveAreaOK 0
+Start from normal system!
+Magic1:0x5a5a5a5a, magic2 0xa5a5a5a5, count 1, flag 0
+Addr[0]:0x0,Addr[1]:0x40000,Addr[2]:0x41000,Addr[3]:0x60000,Addr[4]:0x1e0000,Addr[5]:0xae0000,Addr[6]:0xe60000
+Start copy data from 0x201e0054 to 0x91000000 with sizeof 0x002888c4 .........Done!
+Start system with ram disk and set bootcmd to
+BootArgs:noalign mem=50M console=ttyAMA0,115200 root=/dev/ram0 rootfstype=squashfs mtdparts=hisilicon:0x40000(boot)ro,0x1000(flashcfg)ro,0x1f000(syspara)ro,0x180000(krnl)ro,0x8fffac@0x1e0054(rootfs)ro,0x249024@0xc16fdc(minisystem)ro,0x180000(jffs2cfg),-(reserved) user_debug=0x1f panic=1
+Press d key to abort autoboot: 10
+## Booting image at 20060054 ...
+   Image Name:   HG8245V2 rc12 entry
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    72 Bytes =  0.1 kB
+   Load Address: 90008000
+   Entry Point:  90008000
+   Loading Kernel Image ... OK
+## Loading Ramdisk Image at 91000000 ...
+   Image Name:   squashfs
+   Image Type:   ARM Linux RAMDisk Image (uncompressed)
+   Data Size:    2656388 Bytes =  2.5 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+
+Starting kernel ...
+
+Uncompressing Linux... done, booting the kernel.
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 6.6.144 (builder@build-host) (arm-openwrt-linux-muslgnueabi-gcc (OpenWrt GCC 13.3.0 r29233-443ec4032a) 13.3.0, GNU ld (GNU Binutils) 2.42) #0 Fri Jul 24 07:21:50 2026
+[    0.000000] CPU: ARMv6-compatible processor [410fb767] revision 7 (ARMv7), cr=00c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT nonaliasing instruction cache
+[    0.000000] OF: fdt: Machine model: Huawei HG8245
+[    0.000000] earlycon: uart0 at MMIO32 0x1614f000 (options '115200n8')
+[    0.000000] printk: bootconsole [uart0] enabled
+[    0.000000] Memory policy: Data cache writeback
+[    0.000000] Zone ranges:
+[    0.000000]   Normal   [mem 0x0000000090000000-0x00000000931fffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000090000000-0x00000000931fffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000090000000-0x00000000931fffff]
+[    0.000000] Kernel command line: earlycon console=ttyS0,115200n8 rootfstype=squashfs ro
+[    0.000000] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes, linear)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 12687
+[    0.000000] mem auto-init: stack:off, heap alloc:off, heap free:off
+[    0.000000] Memory: 41576K/51200K available (5466K kernel code, 550K rwdata, 1396K rodata, 1024K init, 213K bss, 9624K reserved, 0K cma-reserved)
+[    0.000000] SLUB: HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+[    0.000000] clocksource: arm,sp804: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1957129694776 ns
+[    0.000005] sched_clock: 32 bits at 977kHz, resolution 1023ns, wraps every 2199022129152ns
+[    0.008648] Calibrating delay loop... 531.66 BogoMIPS (lpj=2658304)
+[    0.056620] CPU: Testing write buffer coherency: ok
+[    0.061711] pid_max: default: 32768 minimum: 301
+[    0.086608] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.094062] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.121370] RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.131240] Setting up static identity map for 0x90100000 - 0x90100038
+[    0.148471] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.158455] futex hash table entries: 256 (order: 0, 3072 bytes, linear)
+[    0.177791] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.185068] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.195236] sd5113: usb clock is on!
+[    0.251271] OF: /soc/ethernet@42000010: #gpio-cells = 2 found 0
+[    0.285570] usbcore: registered new interface driver usbfs
+[    0.291387] usbcore: registered new interface driver hub
+[    0.297025] usbcore: registered new device driver usb
+[    0.305772] clocksource: Switched to clocksource arm,sp804
+[    0.334670] NET: Registered PF_INET protocol family
+[    0.340287] IP idents hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.349790] tcp_listen_portaddr_hash hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.358424] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.366322] TCP established hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.374057] TCP bind hash table entries: 1024 (order: 1, 8192 bytes, linear)
+[    0.381265] TCP: Hash tables configured (established 1024 bind 1024)
+[    0.388810] MPTCP token hash table entries: 512 (order: 1, 6144 bytes, linear)
+[    0.396740] UDP hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    0.403387] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    0.412152] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.418069] PCI: CLS 0 bytes, default 32
+[    0.434178] workingset: timestamp_bits=14 max_order=14 bucket_order=0
+[    0.444514] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    0.450517] jffs2: version 2.2 (NAND) (SUMMARY) (LZMA) (RTIME) (CMODE_PRIORITY) (c) 2001-2006 Red Hat, Inc.
+[    0.472275] sd5113-pci 30000000.pci: host bridge /soc/pci@30000000 ranges:
+[    0.479395] sd5113-pci 30000000.pci:       IO 0x0031000000..0x00310fffff -> 0x0031000000
+[    0.487659] sd5113-pci 30000000.pci:      MEM 0x0038000000..0x00384fffff -> 0x0038000000
+[    0.495893] sd5113-pci 30000000.pci:      MEM 0x0032000000..0x00320fffff -> 0x0032000000
+[    0.512395] sd5113-pci 30000000.pci: PCI host bridge to bus 0000:00
+[    0.518836] pci_bus 0000:00: root bus resource [bus 00]
+[    0.524122] pci_bus 0000:00: root bus resource [io  0x0000-0xfffff] (bus address [0x31000000-0x310fffff])
+[    0.533787] pci_bus 0000:00: root bus resource [mem 0x38000000-0x384fffff]
+[    0.540767] pci_bus 0000:00: root bus resource [mem 0x32000000-0x320fffff pref]
+[    0.548454] pci 0000:00:02.0: [168c:ff1d] type 00 class 0x020000
+[    0.554576] pci 0000:00:02.0: BAR 0 [mem 0x00000000-0x0000ffff]
+[    0.562552] PCI: bus0: Fast back to back transfers enabled
+[    0.568254] pci 0000:00:02.0: BAR 0 [mem 0x38000000-0x3800ffff]: assigned
+[    0.577284] Serial: 8250/16550 driver, 2 ports, IRQ sharing disabled
+[    0.587213] printk: console [ttyS0] disabled
+[    0.592674] 1614f000.serial: ttyS0 at MMIO 0x1614f000 (irq = 18, base_baud = 8328125) is a 16550A
+[    0.601791] printk: console [ttyS0] enabled
+[    0.601791] printk: console [ttyS0] enabled
+[    0.610277] printk: bootconsole [uart0] disabled
+[    0.610277] printk: bootconsole [uart0] disabled
+[    0.647732] physmap-flash 20000000.flash: physmap platform flash device: [mem 0x20000000-0x20ffffff]
+[    0.657111] 20000000.flash: Found 1 x16 devices at 0x0 in 16-bit bank. Manufacturer ID 0x000001 Chip ID 0x002101
+[    0.667414] Amd/Fujitsu Extended Query Table at 0x0040
+[    0.672609]   Amd/Fujitsu Extended Query version 1.3.
+[    0.677770] 20000000.flash: 16 MiB AMD-cmdset chip, forcing MaxBufWriteSize 5 -> 10 (vendor quirk)
+[    0.686818] number of CFI chips: 1
+[    0.698093] 9 fixed-partitions partitions found on MTD device 20000000.flash
+[    0.705208] Creating 9 MTD partitions on "20000000.flash":
+[    0.710814] 0x000000000000-0x000000040000 : "boot"
+[    0.719086] 0x000000040000-0x000000041000 : "flashcfg"
+[    0.726175] 0x000000041000-0x000000060000 : "syspara"
+[    0.741653] 0x000000060000-0x0000001e0000 : "krnl"
+[    0.751353] 0x000000e60000-0x000000fe0000 : "jffs2cfg"
+[    0.761400] 0x000000fe0000-0x000001000000 : "reserved"
+[    0.772301] 0x0000001e0000-0x0000004c0000 : "kernel"
+[    0.783162] 0x0000004c0000-0x000000ae0000 : "rootfs"
+[    0.792846] mtd: setting mtd7 (rootfs) as root device
+[    0.798107] 1 squashfs-split partitions found on MTD device rootfs
+[    0.804340] 0x0000009a0000-0x000000ae0000 : "rootfs_data"
+[    0.814613] 0x000000ae0000-0x000000e60000 : "minisystem"
+[    0.848845] sd5113-eth 42000010.ethernet eth0: SD5113 CPU-port MAC (round 30, UNTESTED on real hardware, see driver header)
+[    0.864809] NET: Registered PF_INET6 protocol family
+[    0.882369] ehci-platform 40010000.ehci: EHCI Host Controller
+[    0.888350] ehci-platform 40010000.ehci: new USB bus registered, assigned bus number 1
+[    0.896819] ehci-platform 40010000.ehci: irq 20, io mem 0x40010000
+[    0.903973] ohci-platform 40020000.ohci: Generic Platform OHCI controller
+[    0.911000] ohci-platform 40020000.ohci: new USB bus registered, assigned bus number 2
+[    0.919316] ohci-platform 40020000.ohci: irq 21, io mem 0x40020000
+[    0.948906] ehci-platform 40010000.ehci: USB 2.0 started, EHCI 1.00
+[    0.959347] hub 1-0:1.0: USB hub found
+[    0.965040] hub 1-0:1.0: 2 ports detected
+[    0.978899] Segment Routing with IPv6
+[    0.982914] In-situ OAM (IOAM) with IPv6
+[    0.987299] NET: Registered PF_PACKET protocol family
+[    0.992499] 8021q: 802.1Q VLAN Support v1.8
+[    1.108236] clk: Disabling unused clocks
+[    1.113091] dw-apb-uart 1614f000.serial: forbid DMA for kernel console
+[    1.121149] hub 2-0:1.0: USB hub found
+[    1.126290] hub 2-0:1.0: 2 ports detected
+[    1.141243] VFS: Mounted root (squashfs filesystem) readonly on device 31:7.
+[    1.157915] Freeing unused kernel image (initmem) memory: 1024K
+[    1.164261] Run /sbin/init as init process
+[    1.774903] init: Console is alive
+[    3.693848] kmodloader: loading kernel modules from /etc/modules-boot.d/*
+[    3.941031] gpio_button_hotplug: loading out-of-tree module taints kernel.
+[    3.949498] gpio-keys gpio-keys: failed to get irq for gpio:-2
+[    3.985193] SCSI subsystem initialized
+[    4.038715] switch0: Atheros AR8316 rev. 1 switch registered on 43b0a000.mdio
+[    4.090587] usbcore: registered new interface driver usb-storage
+[    4.102015] kmodloader: done loading kernel modules from /etc/modules-boot.d/*
+[    4.120580] init: - preinit -
+[   17.205916] random: crng init done
+Press the [f] key and hit [enter] to enter failsafe mode
+Press the [1], [2], [3] or [4] key and hit [enter] to select the debug level
+[   23.590785] mount_root: loading kmods from internal overlay
+[   23.674917] kmodloader: loading kernel modules from //etc/modules-boot.d/*
+[   23.693043] kmodloader: done loading kernel modules from //etc/modules-boot.d/*
+[   23.834247] block: attempting to load /tmp/overlay/upper/etc/config/fstab
+[   23.846153] block: unable to load configuration (fstab: Entry not found)
+[   23.853495] block: attempting to load /tmp/overlay/etc/config/fstab
+[   23.860792] block: unable to load configuration (fstab: Entry not found)
+[   23.868268] block: attempting to load /etc/config/fstab
+[   23.874461] block: unable to load configuration (fstab: Entry not found)
+[   23.881910] block: no usable configuration
+[   23.888006] jffs2: notice: (389) jffs2_build_xattr_subsystem: complete building xattr subsystem, 0 of xdatum (0 unchecked, 0 orphan) and 0 of xref (0 dead, 0 orphan) found.
+[   23.904602] block: attempting to load /tmp/jffs_cfg/upper/etc/config/fstab
+[   23.912562] block: unable to load configuration (fstab: Entry not found)
+[   23.920079] block: attempting to load /tmp/jffs_cfg/etc/config/fstab
+[   23.927453] block: unable to load configuration (fstab: Entry not found)
+[   23.934756] block: attempting to load /etc/config/fstab
+[   23.940987] block: unable to load configuration (fstab: Entry not found)
+[   23.948432] block: no usable configuration
+[   23.956727] jffs2: notice: (387) jffs2_build_xattr_subsystem: complete building xattr subsystem, 0 of xdatum (0 unchecked, 0 orphan) and 0 of xref (0 dead, 0 orphan) found.
+[   24.088160] block: attempting to load /tmp/overlay/upper/etc/config/fstab
+[   24.095903] block: unable to load configuration (fstab: Entry not found)
+[   24.103236] block: attempting to load /tmp/overlay/etc/config/fstab
+[   24.110559] block: unable to load configuration (fstab: Entry not found)
+[   24.118033] block: attempting to load /etc/config/fstab
+[   24.124094] block: unable to load configuration (fstab: Entry not found)
+[   24.131548] block: no usable configuration
+[   24.137521] block: attempting to load /tmp/jffs_cfg/upper/etc/config/fstab
+[   24.145237] block: unable to load configuration (fstab: Entry not found)
+[   24.152746] block: attempting to load /tmp/jffs_cfg/etc/config/fstab
+[   24.160180] block: unable to load configuration (fstab: Entry not found)
+[   24.167661] block: attempting to load /etc/config/fstab
+[   24.173713] block: unable to load configuration (fstab: Entry not found)
+[   24.181178] block: no usable configuration
+[   24.190428] mount_root: overlay filesystem has not been fully initialized yet
+[   24.201308] mount_root: switching to jffs2 overlay
+[   24.217966] overlayfs: upper fs does not support tmpfile.
+[   24.243644] urandom-seed: Seed file not found (/etc/urandom.seed)
+[   24.361476] procd: - early -
+[   25.226332] procd: - ubus -
+[   25.654536] procd: - init -
+Please press Enter to activate this console.
+[   28.544870] kmodloader: loading kernel modules from /etc/modules.d/*
+[   30.608131] urngd: v1.0.2 started.
+[   30.893722] i2c_dev: i2c /dev entries driver
+[   31.227756] spi-sd5113 16150000.spi: SPI master registered: CS0 on GPIO0[3:0], GPIO4 not owned; divider 18
+[   31.497170] Loading modules backported from Linux version v6.12.96-0-g6d15a1029
+[   31.504522] Backport generated by backports.git d43b2b8
+[   31.671808] ath9k_pci_owl_loader 0000:00:02.0: enabling device (0340 -> 0342)
+[   31.683879] ath9k_pci_owl_loader 0000:00:02.0: fixup device configuration
+[   31.836893] pci 0000:00:02.0: [168c:002d] type 00 class 0x028000
+[   31.843036] pci 0000:00:02.0: BAR 0 [mem 0x38000000-0x3800ffff]
+[   31.849358] pci 0000:00:02.0: PME# supported from D0 D3hot
+[   31.856791] pci 0000:00:02.0: BAR 0 [mem 0x38000000-0x3800ffff]: assigned
+[   32.713030] PPP generic driver version 2.4.2
+[   32.758844] NET: Registered PF_PPPOX protocol family
+[   33.026140] ath9k 0000:00:02.0: enabling device (0340 -> 0342)
+[   33.038428] ath: phy0: eeprom contains invalid mac address: ff:ff:ff:ff:ff:ff
+[   33.045639] ath: phy0: random mac address will be used: 02:00:00:00:00:01
+[   33.076522] ieee80211 phy0: Atheros AR9287 Rev:2 mem=0xa10b05d9, irq=22
+[   33.236862] kmodloader: done loading kernel modules from /etc/modules.d/*
+
+
+
+BusyBox v1.36.1 (2026-07-24 07:21:50 UTC) built-in shell (ash)
+
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ -----------------------------------------------------
+ OpenWrt 24.10.8, r29233-443ec4032a
+ -----------------------------------------------------
+=== WARNING! =====================================
+There is no root password defined on this device!
+Use the "passwd" command to set up a new password
+in order to prevent unauthorized SSH logins.
+--------------------------------------------------
+root@OpenWrt:~# [  114.455178] sd5113-eth 42000010.ethernet: first RX DMA mapping: dma=0x92caf720 len=2016
+[  114.464438] sd5113-eth 42000010.ethernet eth0: LAN VLANs 101-104 ready (shared tail 0x1005)
+[  114.473000] sd5113-eth 42000010.ethernet eth0: U-Boot LAN classifier restored (straps 0x1/0x3)
+[  114.576006] sd5113-eth 42000010.ethernet: first TX completion: device_addr=0x91e01002 matched=1
+[  114.676585] sd5113-eth 42000010.ethernet eth0: entered promiscuous mode
+[  114.704410] br-lan: port 1(lan1) entered blocking state
+[  114.709835] br-lan: port 1(lan1) entered disabled state
+[  114.715167] lan1: entered allmulticast mode
+[  114.719525] sd5113-eth 42000010.ethernet eth0: entered allmulticast mode
+[  114.726988] lan1: entered promiscuous mode
+[  114.898069] br-lan: port 1(lan1) entered blocking state
+[  114.903365] br-lan: port 1(lan1) entered forwarding state
+[  115.157389] br-lan: port 2(lan2) entered blocking state
+[  115.162681] br-lan: port 2(lan2) entered disabled state
+[  115.168147] lan2: entered allmulticast mode
+[  115.173011] lan2: entered promiscuous mode
+[  115.177670] br-lan: port 2(lan2) entered blocking state
+[  115.182959] br-lan: port 2(lan2) entered forwarding state
+[  115.414309] br-lan: port 3(lan3) entered blocking state
+[  115.419699] br-lan: port 3(lan3) entered disabled state
+[  115.425028] lan3: entered allmulticast mode
+[  115.500731] lan3: entered promiscuous mode
+[  115.505330] br-lan: port 3(lan3) entered blocking state
+[  115.510742] br-lan: port 3(lan3) entered forwarding state
+[  115.729890] br-lan: port 4(lan4) entered blocking state
+[  115.735181] br-lan: port 4(lan4) entered disabled state
+[  115.740645] lan4: entered allmulticast mode
+[  115.826128] lan4: entered promiscuous mode
+[  115.830727] br-lan: port 4(lan4) entered blocking state
+[  115.836134] br-lan: port 4(lan4) entered forwarding state
+ip addr add 192.168.0.20/24 dev br-lan
+root@OpenWrt:~# [  129.878570] sd5113-eth 42000010.ethernet: first RX completion: ctrl=0x8000 len=64 matched=1
+[  244.065914] usb 1-1: new high-speed USB device number 2 using ehci-platform
+[  244.274237] usb-storage 1-1:1.0: USB Mass Storage device detected
+[  244.288275] scsi host0: usb-storage 1-1:1.0
+[  245.357201] scsi 0:0:0:0: Direct-Access     Netac    OnlyDisk         2.00 PQ: 0 ANSI: 4
+[  245.379984] sd 0:0:0:0: [sda] 30433280 512-byte logical blocks: (15.6 GB/14.5 GiB)
+[  245.388843] sd 0:0:0:0: [sda] Write Protect is off
+[  245.394871] sd 0:0:0:0: [sda] No Caching mode page found
+[  245.400393] sd 0:0:0:0: [sda] Assuming drive cache: write through
+[  245.438724]  sda: sda1 sda2
+[  245.444572] sd 0:0:0:0: [sda] Attached SCSI removable disk
+^C
+
+root@OpenWrt:~#

@@ -1,0 +1,74 @@
+#!/bin/sh
+. /lib/functions.sh
+. /lib/hg8245/board-info.sh
+[ "$(cat /tmp/sysinfo/board_name)" = huawei,hg8245 ] || exit 0
+hg8245_managed_switch || exit 0
+
+# config_generate creates switch0 on first boot. Also handle upgrades from
+# firmware with the same lanN VLAN devices but no swconfig sections.
+if ! uci -q get 'network.@switch[0]' >/dev/null; then
+	uci -q batch <<-EOF || exit 1
+		set network.switch0=switch
+		set network.switch0.name=switch0
+		set network.switch0.reset=1
+		set network.switch0.enable_vlan=1
+	EOF
+fi
+# config_generate can already have emitted a device for the board MAC.
+find_lan_device() {
+	local name type
+	config_get name "$1" name
+	[ "$name" = "lan$n" ] || return 0
+	config_get type "$1" type
+	if [ -n "$type" ]; then
+		configured=1
+	else
+		lan_section=$1
+	fi
+}
+
+# Upgrade the complete old default layout as a unit, preserving custom VLANs.
+hg8245_rc7_vlan_defaults() {
+	local n
+	[ "$(uci -q get 'network.@switch_vlan[4]')" != switch_vlan ] || return 1
+	for n in 1 2 3 4; do
+		[ "$(uci -q get network.lan_vlan$n)" = switch_vlan ] &&
+		[ "$(uci -q get network.lan_vlan$n.device)" = switch0 ] &&
+		[ "$(uci -q get network.lan_vlan$n.vlan)" = "$n" ] &&
+		[ "$(uci -q get network.lan_vlan$n.vid)" = "$((100 + n))" ] &&
+		[ "$(uci -q get network.lan_vlan$n.ports)" = "0t $n" ] || return 1
+	done
+}
+
+config_load network
+remap=0
+hg8245_rc7_vlan_defaults && remap=1
+n=0
+for port in $HG8245_LAN_SWITCH_PORTS; do
+	n=$((n + 1))
+	vid=$((100 + n))
+	if ! uci -q get network.lan_vlan$n >/dev/null; then
+		uci -q batch <<-EOF || exit 1
+			set network.lan_vlan$n=switch_vlan
+			set network.lan_vlan$n.device=switch0
+			set network.lan_vlan$n.vlan=$n
+			set network.lan_vlan$n.vid=$vid
+			set network.lan_vlan$n.ports='0t $port'
+		EOF
+	elif [ "$remap" = 1 ]; then
+		uci -q set "network.lan_vlan$n.ports=0t $port" || exit 1
+	fi
+	lan_section=lan_port$n
+	configured=0
+	config_foreach find_lan_device device
+	if [ "$configured" = 0 ]; then
+		uci -q batch <<-EOF || exit 1
+			set network.$lan_section=device
+			set network.$lan_section.name=lan$n
+			set network.$lan_section.type=8021q
+			set network.$lan_section.ifname=eth0
+			set network.$lan_section.vid=$vid
+		EOF
+	fi
+done
+uci commit network

@@ -1,0 +1,10 @@
+--- a/drivers/clk/hisilicon/Makefile	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/clk/hisilicon/Makefile	2026-09-11 08:10:02.122518814 +0000
+@@ -10,6 +10,7 @@
+ obj-$(CONFIG_ARCH_HIX5HD2)	+= clk-hix5hd2.o
+ obj-$(CONFIG_COMMON_CLK_HI3516CV300)	+= crg-hi3516cv300.o
+ obj-$(CONFIG_COMMON_CLK_HI3519)	+= clk-hi3519.o
++obj-$(CONFIG_COMMON_CLK_SD5113)	+= crg-sd5113.o
+ obj-$(CONFIG_COMMON_CLK_HI3559A)	+= clk-hi3559a.o
+ obj-$(CONFIG_COMMON_CLK_HI3660) += clk-hi3660.o
+ obj-$(CONFIG_COMMON_CLK_HI3670) += clk-hi3670.o

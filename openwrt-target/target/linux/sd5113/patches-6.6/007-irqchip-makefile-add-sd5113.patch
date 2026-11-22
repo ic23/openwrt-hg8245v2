@@ -1,0 +1,10 @@
+--- a/drivers/irqchip/Makefile	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/irqchip/Makefile	2026-09-11 08:10:20.880322159 +0000
+@@ -17,6 +17,7 @@
+ obj-$(CONFIG_IRQ_MXS)			+= irq-mxs.o
+ obj-$(CONFIG_ARCH_TEGRA)		+= irq-tegra.o
+ obj-$(CONFIG_DW_APB_ICTL)		+= irq-dw-apb-ictl.o
++obj-$(CONFIG_SD5113_INTC)		+= irq-sd5113.o
+ obj-$(CONFIG_CLPS711X_IRQCHIP)		+= irq-clps711x.o
+ obj-$(CONFIG_OMPIC)			+= irq-ompic.o
+ obj-$(CONFIG_OR1K_PIC)			+= irq-or1k-pic.o

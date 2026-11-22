@@ -1,0 +1,23 @@
+#!/bin/sh
+case "$1" in
+list) echo '{"status":{},"service":{"mode":"str"},"line":{"port":"str","mode":"str"},"omci":{"mode":"str"},"sip":{"port":"str","peer":"str"}}';;
+call)
+	case "$2" in
+	status)
+		exec ucode -e '
+			import { connect } from "ubus";
+			let bus = connect(), data = {};
+			for (let name in ["telephony", "gpon"])
+				for (let k, v in (bus.call("hg8245." + name, "status") || {}))
+					data[k] = v;
+			printf("%J\n", data);'
+		;;
+	sip|service|line) object=hg8245.telephony ;;
+	omci) object=hg8245.gpon ;;
+	*) exit 3 ;;
+	esac
+	IFS= read -r request
+	exec ubus call "$object" "$2" "$request"
+	;;
+*) exit 2 ;;
+esac

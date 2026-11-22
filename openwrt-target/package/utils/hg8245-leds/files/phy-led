@@ -1,0 +1,11 @@
+[ "$ACTION" = add ] && [ -e "/sys/class/net/$INTERFACE/phy80211" ] || return 0
+. /lib/functions.sh
+apply_phy_led() {
+	local sysfs trigger
+	config_get trigger "$1" trigger
+	[ "$trigger" = phy0tpt ] || return 0
+	config_get sysfs "$1" sysfs
+	[ -n "$sysfs" ] && /etc/init.d/led start "$sysfs"
+}
+config_load system
+config_foreach apply_phy_led led

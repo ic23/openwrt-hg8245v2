@@ -1,0 +1,20 @@
+--- a/drivers/clk/hisilicon/Kconfig	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/clk/hisilicon/Kconfig	2026-09-11 08:09:56.301687586 +0000
+@@ -7,6 +7,17 @@
+ 	help
+ 	  Build the clock driver for hi3516cv300.
+ 
++config COMMON_CLK_SD5113
++	bool "SD5113 Clock Driver"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	default ARCH_SD5113
++	help
++	  Build the clock/reset generator (CRG) driver for the
++	  HiSilicon SD5113 SoC (Huawei HG8245 ONT/router). Provides
++	  spi_clk, i2c_clk, and timer_clk gating plus ahb_clk rate
++	  readout - see drivers/clk/hisilicon/crg-sd5113.c for exactly
++	  what is confirmed vs unverified.
++
+ config COMMON_CLK_HI3519
+ 	tristate "Hi3519 Clock Driver"
+ 	depends on ARCH_HISI || COMPILE_TEST

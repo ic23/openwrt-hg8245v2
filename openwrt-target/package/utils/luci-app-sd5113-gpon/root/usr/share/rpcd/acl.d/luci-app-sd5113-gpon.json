@@ -1,0 +1,34 @@
+{
+  "luci-app-sd5113-gpon": {
+    "description": "Manage GPON",
+    "read": {
+      "ubus": {
+        "hg8245.gpon": [
+          "status"
+        ]
+      }
+    },
+    "write": {
+      "ubus": {
+        "hg8245.gpon": [
+          "omci"
+        ]
+      }
+    }
+  },
+  "hg8245-iptv": {
+    "description": "Configure IPTV multicast forwarding",
+    "read": {
+      "uci": [
+        "igmpproxy",
+        "network",
+        "firewall"
+      ]
+    },
+    "write": {
+      "uci": [
+        "igmpproxy"
+      ]
+    }
+  }
+}

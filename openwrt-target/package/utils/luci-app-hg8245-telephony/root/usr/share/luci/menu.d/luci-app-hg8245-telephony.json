@@ -1,0 +1,15 @@
+{
+  "admin/services/telephony": {
+    "title": "Telephony",
+    "order": 65,
+    "action": {
+      "type": "view",
+      "path": "hg8245/telephony"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-hg8245-telephony"
+      ]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+#!/bin/sh
+. /lib/functions.sh
+. /lib/functions/uci-defaults.sh
+. /lib/hg8245/board-info.sh
+
+[ "$(board_name)" = huawei,hg8245 ] || exit 0
+board_config_update
+ports=eth0
+if hg8245_managed_switch; then
+	ports="lan1 lan2 lan3 lan4"
+	ucidef_add_switch switch0 "0t@eth0"
+	# Expose the front-panel jack numbers to LuCI. The four transport
+	# VLANs are installed with their explicit VIDs in 12_hg8245_lan_ports.
+	json_select switch
+	json_select switch0
+	json_select_array ports
+	n=0
+	for port in $HG8245_LAN_SWITCH_PORTS; do
+		n=$((n + 1))
+		json_add_object
+		json_add_int num "$port"
+		json_add_string role lan
+		json_add_int index "$n"
+		json_close_object
+	done
+	json_select ..
+	json_select ..
+	json_select ..
+fi
+ucidef_set_interfaces_lan_wan "$ports" optic
+mac=$(hg8245_board_mac LanMac) && ucidef_set_interface_macaddr lan "$mac"
+mac=$(hg8245_board_mac WanMac) && ucidef_set_interface_macaddr wan "$mac"
+board_config_flush

@@ -1,0 +1,3 @@
+Portable OMCI engine from https://github.com/juanmreyesa/ma5671a-openwrt
+commit a851fa767ac79e52bf6b403f170b56055f02a2bf, omcid-libre/src, GPL-2.0-only.
+Local changes: VEIP schema and SD5113 transport, service and board MIB.

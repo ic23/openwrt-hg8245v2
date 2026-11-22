@@ -1,0 +1,84 @@
+--- a/drivers/net/phy/ar8216.c
++++ b/drivers/net/phy/ar8216.c
+@@ -696,7 +696,7 @@
+ 		   AR8216_PORT_CTRL_LEARN | AR8216_PORT_CTRL_VLAN_MODE |
+ 		   AR8216_PORT_CTRL_SINGLE_VLAN | AR8216_PORT_CTRL_STATE |
+ 		   AR8216_PORT_CTRL_HEADER | AR8216_PORT_CTRL_LEARN_LOCK,
+-		   AR8216_PORT_CTRL_LEARN | header |
++		   (priv->cpu_port_vlans ? 0 : AR8216_PORT_CTRL_LEARN) | header |
+ 		   (egress << AR8216_PORT_CTRL_VLAN_MODE_S) |
+ 		   (AR8216_PORT_STATE_FORWARD << AR8216_PORT_CTRL_STATE_S));
+ 
+@@ -1397,13 +1397,34 @@
+ 	ar8xxx_rmw(priv, reg, AR8216_ATU_CTRL_AGE_TIME, age_time << AR8216_ATU_CTRL_AGE_TIME_S);
+ }
+ 
++/* Each access port has only the CPU as a forwarding destination. The
++ * AR8316 shares learned MACs across VIDs, so a copy flooded by the host
++ * bridge would move the original sender to the CPU port.
++ */
++static bool
++ar8316_has_cpu_port_vlans(struct ar8xxx_priv *priv, const u8 *portmask)
++{
++	int i;
++
++	if (!chip_is_ar8316(priv) || priv->init || !priv->vlan ||
++	    !(priv->vlan_tagged & BIT(AR8216_PORT_CPU)) ||
++	    hweight8(portmask[AR8216_PORT_CPU]) < 2)
++		return false;
++
++	for (i = 0; i < priv->dev.ports; i++)
++		if (i != AR8216_PORT_CPU && (portmask[i] & ~BIT(AR8216_PORT_CPU)))
++			return false;
++
++	return true;
++}
++
+ int
+ ar8xxx_sw_hw_apply(struct switch_dev *dev)
+ {
+ 	struct ar8xxx_priv *priv = swdev_to_ar8xxx(dev);
+ 	const struct ar8xxx_chip *chip = priv->chip;
+ 	u8 portmask[AR8X16_MAX_PORTS];
+-	int i, j;
++	int i, j, ret = 0;
+ 
+ 	mutex_lock(&priv->reg_mutex);
+ 	/* flush all vlan translation unit entries */
+@@ -1440,11 +1461,17 @@
+ 		}
+ 	}
+ 
++	priv->cpu_port_vlans = ar8316_has_cpu_port_vlans(priv, portmask);
++
+ 	/* update the port destination mask registers and tag settings */
+ 	for (i = 0; i < dev->ports; i++) {
+ 		chip->setup_port(priv, i, portmask[i]);
+ 	}
+ 
++	/* Drop entries learned under the preceding configuration. */
++	if (priv->cpu_port_vlans)
++		ret = chip->atu_flush(priv);
++
+ 	chip->set_mirror_regs(priv);
+ 
+ 	/* set age time */
+@@ -1452,7 +1479,7 @@
+ 		ar8xxx_set_age_time(priv, chip->reg_arl_ctrl);
+ 
+ 	mutex_unlock(&priv->reg_mutex);
+-	return 0;
++	return ret;
+ }
+ 
+ int
+--- a/drivers/net/phy/ar8216.h
++++ b/drivers/net/phy/ar8216.h
+@@ -508,6 +508,7 @@
+ 	/* all fields below are cleared on reset */
+ 	struct_group(ar8xxx_priv_volatile,
+ 		bool vlan;
++		bool cpu_port_vlans;
+ 
+ 		u16 vlan_id[AR8XXX_MAX_VLANS];
+ 		u8 vlan_table[AR8XXX_MAX_VLANS];

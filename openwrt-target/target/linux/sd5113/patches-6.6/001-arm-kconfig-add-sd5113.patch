@@ -1,0 +1,11 @@
+--- a/arch/arm/Kconfig	2023-10-30 02:31:08.000000000 +0000
++++ b/arch/arm/Kconfig	2026-09-11 07:56:35.168675433 +0000
+@@ -518,6 +518,8 @@
+ 
+ source "arch/arm/mach-sa1100/Kconfig"
+ 
++source "arch/arm/mach-sd5113/Kconfig"
++
+ source "arch/arm/mach-shmobile/Kconfig"
+ 
+ source "arch/arm/mach-socfpga/Kconfig"

@@ -1,0 +1,23 @@
+--- a/drivers/pci/controller/Kconfig	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/pci/controller/Kconfig	2026-09-11 08:10:38.431230788 +0000
+@@ -119,6 +119,20 @@
+ 	depends on OF
+ 	default ARCH_GEMINI
+ 
++config PCI_SD5113
++	bool "HiSilicon SD5113 PCI host controller"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	depends on PCI
++	default ARCH_SD5113
++	help
++	  Say Y here for the PCI host controller on the HiSilicon
++	  SD5113 SoC (Huawei HG8245 ONT/router) - used for the onboard
++	  Wi-Fi card slot on that board. Config-space encoder and
++	  clock-enable sequence are confirmed by reverse engineering;
++	  some BAR/window registers are reproduced from vendor code
++	  without their meaning being independently understood - see
++	  drivers/pci/controller/pci-sd5113.c.
++
+ config PCI_HOST_COMMON
+ 	tristate
+ 	select PCI_ECAM

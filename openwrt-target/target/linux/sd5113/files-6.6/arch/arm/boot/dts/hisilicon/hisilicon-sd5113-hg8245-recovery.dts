@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-panel-wifi.dts"
+#include "hisilicon-sd5113-hg8245-ar8316.dtsi"
+#include "hisilicon-sd5113-hg8245-usb.dtsi"
+
+/* Include both vendor envelopes so a streamed backup covers every NOR byte. */
+&{/soc/flash@20000000/partitions} {
+	/delete-node/ partition@1e0054;
+	/delete-node/ partition@c16fdc;
+	partition@1e0000 {
+		label = "stock-rootfs";
+		reg = <0x1e0000 0x900000>;
+		read-only;
+	};
+	partition@ae0000 {
+		label = "minisystem";
+		reg = <0xae0000 0x380000>;
+		read-only;
+	};
+};
+
+&{/soc/ethernet@42000010} {
+	hisilicon,gem-wan;
+	hisilicon,lan-trunk-port = <0>;
+};

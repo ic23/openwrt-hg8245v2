@@ -1,0 +1,45 @@
+#!/bin/sh
+. /usr/share/libubox/jshn.sh
+g=/sys/bus/platform/devices/420000a0.gpon-rx
+
+fields() {
+	local dir="$1" key value
+	shift
+	for key in "$@"; do
+		if { IFS= read -r value < "$dir/$key"; } 2>/dev/null; then
+			json_add_string "$key" "$value"
+		fi
+	done
+}
+
+case "$1" in
+list) echo '{"status":{},"omci":{"mode":"str"}}';;
+call)
+	case "$2" in
+	status)
+		json_init
+		[ ! -x /usr/sbin/sd5113-omcid ] || json_add_boolean managed 1
+		fields "$g" gem_service factory_serial_status onu_id omcc_port alloc_ids ploam_tx_busy equalization_delay_bits los lof ploam_rx ploam_crc_errors ploam_dropped upstream_overhead omci_capture omci_received omci_dropped
+		for d in /sys/class/hwmon/hwmon*; do
+			case "$(cat "$d/name" 2>/dev/null)" in
+			hpsf2120|rtxm167_407|hg8245_ddm) fields "$d" temp1_input in0_input ;;
+			esac
+		done
+		json_dump
+		;;
+	omci)
+		[ ! -x /usr/sbin/sd5113-omcid ] || { echo '{"ok":false}'; exit 0; }
+		IFS= read -r request
+		json_load "$request" || exit 2
+		json_get_var mode mode
+		case "$mode" in 0|1) file="$g/omci_capture";; *) exit 2;; esac
+		if [ -e "$file" ] && printf '%s\n' "$mode" > "$file"; then
+			echo '{"ok":true}'
+		else
+			echo '{"ok":false}'
+		fi
+		;;
+	*) exit 3;;
+	esac;;
+*) exit 2;;
+esac

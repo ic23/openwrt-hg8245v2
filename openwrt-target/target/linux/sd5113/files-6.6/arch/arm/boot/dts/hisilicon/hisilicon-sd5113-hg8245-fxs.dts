@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-spi.dts"
+#include "hisilicon-sd5113-hg8245-i2c.dtsi"
+#include "hisilicon-sd5113-hg8245-gpon-status.dtsi"
+
+&{/chosen} {
+	/* The combined initramfs exceeds tmpfs's default early-boot page limit. */
+	bootargs = "earlycon console=ttyS0,115200n8 rootfstype=ramfs rdinit=/lib/hg8245/ram-init";
+};
+
+&gpio0 {
+	hisilicon,debug-gpio-banks;
+
+	/* HG8245V2 GPIO/Cfg79: needed for the SLIC to answer on MPI. */
+	gpio32-high {
+		gpio-hog;
+		gpios = <32 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "hg8245-gpio32";
+	};
+};
+
+&spi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	slic@0 {
+		#sound-dai-cells = <0>;
+		compatible = "zarlink,le88266";
+		huawei,tel-ports-swapped;
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+		spi-cpol;
+		spi-cpha;
+		hisilicon,highway = <&voice_highway>;
+	};
+};
+&{/soc} {
+	voice_highway: highway@43a00000 {
+		compatible = "hisilicon,sd5113-highway";
+		reg = <0x43a00000 0x128>;
+		hisilicon,crg = <&crg>;
+	};
+};
+&i2c0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	optics@50 {
+		compatible = "huawei,hg8245v2-optics";
+		reg = <0x50>;
+	};
+};
+
+&{/soc/gpon-rx@420000a0} {
+	huawei,board-info = <&syspara>;
+	hisilicon,crg = <&crg>;
+	hisilicon,dp-irq-regs = <&{/soc/ethernet@42000010}>;
+	interrupts = <25>;
+	pon-gpios = <&gpio0 22 0>, <&gpio0 23 0>;
+	compatible = "hisilicon,sd5113-gpon-burst", "hisilicon,sd5113-gpon-rx-queue",
+		     "hisilicon,sd5113-gpon-rx-status";
+	reg = <0x420000a0 4>, <0x4320000c 4>, <0x43200044 4>, <0x43200080 4>,
+	      <0x43200034 4>, <0x43200084 4>, <0x43200038 12>, <0x43400028 4>,
+	      <0x4340003c 4>, <0x43400040 20>, <0x42900008 4>, <0x42980100 256>,
+	      <0x42900004 4>, <0x42980000 44>, <0x43400000 4>, <0x4340002c 8>,
+	      <0x43380000 0x4000>, <0x42900000 4>, <0x43400004 0x20>,
+	      <0x43200048 0x20>, <0x43400024 4>, <0x43300008 0x6c>;
+	reg-names = "los", "lof", "ploam-rx", "ploam-crc-errors", "ploam-pending",
+		    "ploam-dropped", "ploam-data", "pre-eqd", "timing-commit", "burst-format", "omci-ready", "omci-data",
+		    "omci-send", "omci-out", "onu-id", "equalization-delay",
+		    "downstream-gem", "omci-route", "ploam-tx", "tcont", "random-delay", "gem-crypto";
+};
+
+&{/soc/ethernet@42000010} {
+	compatible = "hisilicon,sd5113-eth", "syscon";
+	reg = <0x42000010 0x10>, <0x42100000 0xd8>, <0x42e00000 0x3c>,
+	      <0x42c80000 0x4000>, <0x43188000 0x0e00>, <0x4318c000 0x100>,
+	      <0x43190000 0x100>, <0x420000c8 4>, <0x43782000 0x4800>;
+	reg-names = "glb", "cpurtx", "fe-cpu", "fe-mode", "fe-classifier",
+		    "fe-policy", "fe-dest", "cpu-port-cfg", "fe-broadcast";
+	hisilicon,restore-uboot-lan;
+	status = "okay";
+};
+
+&pci {
+	status = "okay";
+};

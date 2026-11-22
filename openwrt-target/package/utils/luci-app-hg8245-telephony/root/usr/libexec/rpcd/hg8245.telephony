@@ -1,0 +1,72 @@
+#!/bin/sh
+. /usr/share/libubox/jshn.sh
+s=/sys/bus/spi/devices/spi0.0
+
+fields() {
+	local dir="$1" key value
+	shift
+	for key in "$@"; do
+		if { IFS= read -r value < "$dir/$key"; } 2>/dev/null; then
+			json_add_string "$key" "$value"
+		fi
+	done
+}
+
+case "$1" in
+list) echo '{"status":{},"service":{"mode":"str"},"line":{"port":"str","mode":"str"},"sip":{"port":"str","peer":"str"}}';;
+call)
+	case "$2" in
+	status)
+		json_init
+		fields "$s" service tel1_media tel2_media
+		case "$(cat "$s/service" 2>/dev/null)" in on|intercom|media) fields "$s" tel1 tel2;; esac
+		json_add_string sip_port "$(uci -q get hg8245.sip.port)"
+		json_add_string sip_peer "$(uci -q get hg8245.sip.peer)"
+		if pidof hg8245-sip >/dev/null; then
+			json_add_string sip_state running
+		else
+			json_add_string sip_state stopped
+		fi
+		json_dump
+		;;
+	sip)
+		IFS= read -r request
+		json_load "$request" || exit 2
+		json_get_var port port
+		json_get_var peer peer
+		case "$port" in off) enabled=0;; tel1|tel2) enabled=1;; *) exit 2;; esac
+		case "$peer" in ""|sip:?*) ;; *) exit 2;; esac
+		case "$peer" in *[!a-zA-Z0-9@.:_+-]*) exit 2;; esac
+		[ "${#peer}" -le 200 ] || exit 2
+		if [ "$enabled" = 1 ]; then
+			uci set "hg8245.sip.port=$port" && uci set "hg8245.sip.peer=$peer" || exit 1
+		fi
+		uci set "hg8245.sip.enabled=$enabled" && uci commit hg8245 || exit 1
+		/etc/init.d/hg8245-sip restart >/dev/null || exit 1
+		echo '{"ok":true}'
+		;;
+	service|line)
+		IFS= read -r request
+		json_load "$request" || exit 2
+		json_get_var mode mode
+		if pidof hg8245-sip >/dev/null; then
+			echo '{"ok":false}'
+			exit 0
+		fi
+		case "$2:$mode" in
+		service:on|service:off|service:intercom) file="$s/service";;
+		line:phone|line:incoming|line:standby|line:busy|line:ringback)
+			json_get_var port port
+			case "$port" in tel1|tel2) file="$s/$port";; *) exit 2;; esac;;
+		*) exit 2;;
+		esac
+		if [ -e "$file" ] && printf '%s\n' "$mode" > "$file"; then
+			echo '{"ok":true}'
+		else
+			echo '{"ok":false}'
+		fi
+		;;
+	*) exit 3;;
+	esac;;
+*) exit 2;;
+esac

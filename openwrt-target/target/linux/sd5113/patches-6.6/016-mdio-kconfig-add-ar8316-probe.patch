@@ -1,0 +1,18 @@
+--- a/drivers/net/mdio/Kconfig
++++ b/drivers/net/mdio/Kconfig
+@@ -117,6 +117,15 @@
+ 	  switch chip - see drivers/net/mdio/mdio-sd5113.c for exactly
+ 	  what is confirmed vs unverified (protocol reverse-engineered,
+ 	  never tested on real hardware).
++
++config AR8316_SD5113_PROBE
++	tristate "Read-only SD5113 AR8316 identification probe"
++	depends on MDIO_SD5113
++	depends on OF_MDIO
++	help
++	  Read the AR8316 switch ID discriminator and POSTRIP register through
++	  the SD5113 MDIO bus. This is intentionally read-only and is a hardware
++	  validation step, not the switch dataplane driver.
+ 
+ config MDIO_GPIO
+ 	tristate "GPIO lib-based bitbanged MDIO buses"

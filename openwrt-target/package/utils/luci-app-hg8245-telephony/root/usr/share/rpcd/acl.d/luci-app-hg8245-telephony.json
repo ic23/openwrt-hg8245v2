@@ -1,0 +1,21 @@
+{
+  "luci-app-hg8245-telephony": {
+    "description": "Manage Telephony",
+    "read": {
+      "ubus": {
+        "hg8245.telephony": [
+          "status"
+        ]
+      }
+    },
+    "write": {
+      "ubus": {
+        "hg8245.telephony": [
+          "service",
+          "line",
+          "sip"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+--- a/drivers/net/mdio/Makefile	2026-09-13 21:33:09.429851319 +0000
++++ b/drivers/net/mdio/Makefile	2026-09-13 21:33:00.598341253 +0000
+@@ -11,6 +11,7 @@
+ obj-$(CONFIG_MDIO_BITBANG)		+= mdio-bitbang.o
+ obj-$(CONFIG_MDIO_CAVIUM)		+= mdio-cavium.o
+ obj-$(CONFIG_MDIO_GPIO)			+= mdio-gpio.o
++obj-$(CONFIG_MDIO_SD5113)		+= mdio-sd5113.o
+ obj-$(CONFIG_MDIO_HISI_FEMAC)		+= mdio-hisi-femac.o
+ obj-$(CONFIG_MDIO_I2C)			+= mdio-i2c.o
+ obj-$(CONFIG_MDIO_IPQ4019)		+= mdio-ipq4019.o

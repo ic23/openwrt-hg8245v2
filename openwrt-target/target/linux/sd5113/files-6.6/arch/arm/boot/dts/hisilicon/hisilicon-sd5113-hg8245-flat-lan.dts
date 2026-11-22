@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-recovery.dts"
+
+&switch0 {
+	compatible = "hisilicon,sd5113-ar8316-probe";
+	huawei,front-panel-leds;
+	/delete-property/ qca,postrip;
+	/delete-property/ qca,led-control;
+};
+
+&{/soc/ethernet@42000010} {
+	/delete-property/ hisilicon,lan-trunk-port;
+};

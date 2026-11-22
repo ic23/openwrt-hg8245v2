@@ -1,0 +1,15 @@
+#!/bin/sh
+# Stream the complete read-only recovery partition map to an external file.
+set -eu
+[ ! -t 1 ] || { echo "Redirect binary output to storage outside the router." >&2; exit 1; }
+devices=
+for expected in boot:00040000 flashcfg:00001000 syspara:0001f000 krnl:00180000 stock-rootfs:00900000 minisystem:00380000 jffs2cfg:00180000 reserved:00020000; do
+	name=${expected%:*}
+	size=${expected#*:}
+	dev=$(awk -v n="\"$name\"" -v s="$size" '$4 == n && $2 == s {sub(/:$/, "", $1); print $1}' /proc/mtd)
+	[ -c "/dev/${dev}ro" ] || { echo "Missing recovery partition: $name" >&2; exit 1; }
+	devices="$devices /dev/${dev}ro"
+done
+for dev in $devices; do
+	cat "$dev"
+done

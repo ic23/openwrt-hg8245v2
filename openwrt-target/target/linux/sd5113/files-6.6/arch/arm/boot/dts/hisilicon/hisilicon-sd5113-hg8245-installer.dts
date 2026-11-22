@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-recovery.dts"
+
+&{/chosen} {
+	bootargs = "earlycon console=ttyS0,115200n8 rootfstype=ramfs rdinit=/lib/hg8245/installer-init";
+};
+
+&{/soc/flash@20000000/partitions} {
+	/delete-node/ partition@60000;
+	/delete-node/ partition@1e0000;
+	partition@60000 {
+		label = "openwrt-system";
+		reg = <0x60000 0xa80000>;
+	};
+};

@@ -1,0 +1,77 @@
+From: sd5113 port
+Subject: [PATCH] lib/xz: add optional boot-time kick hooks
+
+Boot-time XZ decoding of a large zImage runs for seconds in a single call with
+no output. Add XZ_BOOT_KICK() (per LZMA symbol, rate-limited by the arch) and
+XZ_BOOT_KICK_BULK() (about every 64 KiB in the CRC32 and BCJ passes) so an
+architecture can service hardware (e.g. an already-running watchdog) while
+decompressing. Both default to nothing; no other architecture is affected.
+---
+--- a/lib/xz/xz_private.h
++++ b/lib/xz/xz_private.h
+@@ -10,6 +10,18 @@
+ #ifndef XZ_PRIVATE_H
+ #define XZ_PRIVATE_H
+ 
++/*
++ * Optional hooks for boot-time decompressors that must poke hardware (e.g. a
++ * watchdog that is already running when the zImage starts) during the long,
++ * silent single-call decode. XZ_BOOT_KICK() is called once per LZMA symbol and
++ * is expected to rate-limit itself; XZ_BOOT_KICK_BULK() is called roughly every
++ * 64 KiB from the CRC32 and BCJ passes. Both default to nothing, so the normal
++ * kernel build and every other architecture are unaffected.
++ */
++#ifndef XZ_BOOT_KICK
++#	define XZ_BOOT_KICK() do { } while (0)
++#endif
++
+ #ifdef __KERNEL__
+ #	include <linux/xz.h>
+ #	include <linux/kernel.h>
+--- a/lib/xz/xz_dec_lzma2.c
++++ b/lib/xz/xz_dec_lzma2.c
+@@ -767,6 +767,7 @@
+ 	 * LZMA_IN_REQUIRED - 1 bytes.
+ 	 */
+ 	while (dict_has_space(&s->dict) && !rc_limit_exceeded(&s->rc)) {
++		XZ_BOOT_KICK();
+ 		pos_state = s->dict.pos & s->lzma.pos_mask;
+ 
+ 		if (!rc_bit(&s->rc, &s->lzma.is_match[
+--- a/lib/xz/xz_crc32.c
++++ b/lib/xz/xz_crc32.c
+@@ -53,6 +53,10 @@
+ 	while (size != 0) {
+ 		crc = xz_crc32_table[*buf++ ^ (crc & 0xFF)] ^ (crc >> 8);
+ 		--size;
++#ifdef XZ_BOOT_KICK_BULK
++		if (!(size & 0xffff))
++			XZ_BOOT_KICK_BULK();
++#endif
+ 	}
+ 
+ 	return ~crc;
+--- a/lib/xz/xz_dec_bcj.c
++++ b/lib/xz/xz_dec_bcj.c
+@@ -268,6 +268,10 @@
+ 	uint32_t addr;
+ 
+ 	for (i = 0; i + 4 <= size; i += 4) {
++#ifdef XZ_BOOT_KICK_BULK
++		if (!(i & 0xffff))
++			XZ_BOOT_KICK_BULK();
++#endif
+ 		if (buf[i + 3] == 0xEB) {
+ 			addr = (uint32_t)buf[i] | ((uint32_t)buf[i + 1] << 8)
+ 					| ((uint32_t)buf[i + 2] << 16);
+@@ -291,6 +295,10 @@
+ 	uint32_t addr;
+ 
+ 	for (i = 0; i + 4 <= size; i += 2) {
++#ifdef XZ_BOOT_KICK_BULK
++		if (!(i & 0xffff))
++			XZ_BOOT_KICK_BULK();
++#endif
+ 		if ((buf[i + 1] & 0xF8) == 0xF0
+ 				&& (buf[i + 3] & 0xF8) == 0xF8) {
+ 			addr = (((uint32_t)buf[i + 1] & 0x07) << 19)

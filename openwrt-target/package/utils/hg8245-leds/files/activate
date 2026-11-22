@@ -1,0 +1,10 @@
+# Sourced by the stock led init script, which supplies $sysfs.
+case "$sysfs" in ''|.|..|*[!A-Za-z0-9:._-]*) return 1 ;; esac
+local dir="/sys/class/leds/$sysfs" previous brightness
+[ -w "$dir/trigger" ] || return 1
+previous=$(sed -n 's/.*\[\([^]]*\)\].*/\1/p' "$dir/trigger")
+read -r brightness < "$dir/brightness" || return 1
+echo pattern > "$dir/trigger" || return 1
+# The led service restores this state on removal or reassignment.
+printf '%s %s %s\n' "$sysfs" "$previous" "$brightness" >> /var/run/led.state
+touch /var/run/hg8245-led-reload

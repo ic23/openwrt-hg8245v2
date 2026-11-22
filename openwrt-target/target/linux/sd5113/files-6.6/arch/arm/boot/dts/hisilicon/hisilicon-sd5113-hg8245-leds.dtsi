@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include <dt-bindings/gpio/gpio.h>
+
+/*
+ * HG8245V2, board 1 / PCB 3 only. WLAN LED owns GPIO4; the combined
+ * board-I/O profile enables SPI CS0 only, using GPIO0[3:0].
+ * Start every indicator off, matching stock GPIO initialization.
+ * Userspace may set brightness; no link or telephony policy here.
+ */
+/ {
+	leds {
+		compatible = "gpio-leds";
+
+		led-power {
+			label = "power";
+			gpios = <&stock_gpio 37 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* Both stock LOS channels are aliases for the same GPIO. */
+		led-los {
+			label = "los";
+			gpios = <&stock_gpio 61 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* Use stock channel indices rather than assume lamp colors. */
+		led-pon-0 {
+			label = "pon-0";
+			gpios = <&stock_gpio 39 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-pon-1 {
+			label = "pon-1";
+			gpios = <&stock_gpio 60 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-wlan {
+			label = "wlan";
+			gpios = <&stock_gpio 4 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-usb {
+			label = "usb";
+			gpios = <&stock_gpio 43 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-tel1 {
+			label = "tel1";
+			gpios = <&stock_gpio 47 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-tel2 {
+			label = "tel2";
+			gpios = <&stock_gpio 48 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led-wps {
+			label = "wps";
+			gpios = <&stock_gpio 50 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+	};
+};

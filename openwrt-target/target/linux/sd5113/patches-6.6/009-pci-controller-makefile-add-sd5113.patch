@@ -1,0 +1,10 @@
+--- a/drivers/pci/controller/Makefile	2023-10-30 02:31:08.000000000 +0000
++++ b/drivers/pci/controller/Makefile	2026-09-11 08:10:38.431391148 +0000
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ obj-$(CONFIG_PCIE_CADENCE) += cadence/
+ obj-$(CONFIG_PCI_FTPCI100) += pci-ftpci100.o
++obj-$(CONFIG_PCI_SD5113) += pci-sd5113.o
+ obj-$(CONFIG_PCI_IXP4XX) += pci-ixp4xx.o
+ obj-$(CONFIG_PCI_HYPERV) += pci-hyperv.o
+ obj-$(CONFIG_PCI_HYPERV_INTERFACE) += pci-hyperv-intf.o

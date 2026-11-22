@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/* No auto-probed clients: optical EEPROM access is opt-in. */
+&i2c0 {
+	hisilicon,crg = <&crg>;
+	i2c-gpios = <&gpio0 5 0>, <&gpio0 6 0>;
+	clock-frequency = <100000>;
+	status = "okay";
+};

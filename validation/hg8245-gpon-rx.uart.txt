@@ -1,0 +1,15 @@
+HG8245V2, gpon-rx.bin. Выдержки из UART пользователя, в порядке вывода.
+Пользователь подтвердил, что волокно было отключено на протяжении прогона.
+
+los                         1
+lof                         0
+ploam_rx                    0, затем 0
+ploam_crc_errors            0, затем 0
+/sys/class/i2c-dev/i2c-*/name
+SD5113 hardware I2C
+hg8245-optic-id --rx-power (оба запуска)
+Optical PN: HPSF2120
+RX raw=11, optical power=-45.47 dBm
+
+
+Приведён фрагмент оптической диагностики. Действующий OLT в этом прогоне отсутствовал.

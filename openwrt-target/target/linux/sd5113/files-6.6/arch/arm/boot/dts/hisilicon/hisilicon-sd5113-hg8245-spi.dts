@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245.dts"
+
+&spi0 {
+	clocks = <&crg SD5113_CLK_AHB>;
+	clock-names = "ahb";
+	hisilicon,crg = <&crg>;
+	spi-pads-gpios = <&gpio0 0 0>, <&gpio0 1 0>,
+			<&gpio0 2 0>, <&gpio0 3 0>;
+	status = "okay";
+};

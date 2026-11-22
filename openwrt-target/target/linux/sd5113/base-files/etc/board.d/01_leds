@@ -1,0 +1,22 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-only
+. /lib/functions/uci-defaults.sh
+
+[ -r /lib/hg8245/led-activate ] || exit 0
+[ "$(board_name)" = huawei,hg8245 ] || exit 0
+
+board_config_update
+_ucidef_set_led_trigger tel1 POTS1 tel1 hg8245-tel1
+_ucidef_set_led_trigger tel2 POTS2 tel2 hg8245-tel2
+_ucidef_set_led_trigger los LOS los hg8245-los
+_ucidef_set_led_trigger pon PON pon-1 hg8245-pon
+_ucidef_set_led_trigger pon_aux "PON (channel 0)" pon-0 none
+_ucidef_set_led_trigger power "POWER (backup)" power hg8245-bbu
+_ucidef_set_led_trigger usb USB usb hg8245-usb
+_ucidef_set_led_trigger wps WPS wps hg8245-wps
+if [ -e /etc/modules.d/ath9k ]; then
+	ucidef_set_led_wlan wlan WLAN wlan phy0tpt
+else
+	_ucidef_set_led_trigger wlan WLAN wlan none
+fi
+board_config_flush

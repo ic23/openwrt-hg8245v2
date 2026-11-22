@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-only
+#include "hisilicon-sd5113-hg8245-le88226-id.dts"
+
+/ {
+	huawei,voice-chain-lab;
+};
+
+&spi0 {
+	codec@0 {
+		huawei,wait-zsp;
+	};
+};

@@ -1,0 +1,10 @@
+#!/bin/sh
+. /lib/functions.sh
+. /lib/hg8245/board-info.sh
+[ "$(board_name)" = huawei,hg8245 ] || exit 0
+mac=$(hg8245_board_mac WlanMac) || exit 0
+# The owl calibration on this revision has ff:ff:ff:ff:ff:ff in its MAC field.
+# wifi config creates the stock AP section before boot runs uci-defaults.
+[ "$(uci -q get wireless.default_radio0)" = wifi-iface ] || exit 1
+[ -n "$(uci -q get wireless.default_radio0.macaddr)" ] ||
+	uci set wireless.default_radio0.macaddr="$mac"

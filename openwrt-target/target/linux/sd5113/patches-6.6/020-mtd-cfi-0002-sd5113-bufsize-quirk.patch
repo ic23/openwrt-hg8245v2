@@ -1,0 +1,52 @@
+From: sd5113 port
+Subject: [PATCH] mtd: cfi_cmdset_0002: HG8245 MaxBufWriteSize quirk
+
+The vendor kernel forces MaxBufWriteSize to 10 for the 16 MiB x16 NOR flash on
+the Huawei HG8245 (detected from CFI query values, cfi->mfr == 1). Reproduce
+that as an AMD-manufacturer fixup, with exactly the vendor's condition.
+---
+--- a/drivers/mtd/chips/cfi_cmdset_0002.c
++++ b/drivers/mtd/chips/cfi_cmdset_0002.c
+@@ -461,6 +461,34 @@
+ 	{ 0, 0, NULL }
+ };
+ 
++/*
++ * Huawei HG8245 (HiSilicon SD5113), 16 MiB x16 NOR ("Numonyx JS28F128M29EWHA"
++ * per the vendor's own message). The vendor kernel's CFI probe (vmlinux
++ * 0xc016bdcc..0xc016c244) overrides the CFI-reported MaxBufWriteSize with 10
++ * (1 KiB write buffer) when
++ *     cfi->mfr == 1 && cfiq->DevSize == 24 &&
++ *     cfiq->ChipEraseTimeoutTyp != 0 && cfiq->ChipEraseTimeoutMax != 0
++ * and then prints "Find NUMONYX JS28F128M29EWHA and set MaxBufWriteSize to 10".
++ * Reproduce exactly that, so buffered writes use the size the vendor proved
++ * on the real chip instead of whatever the query table claims.
++ */
++static void fixup_sd5113_bufsize(struct mtd_info *mtd)
++{
++	struct map_info *map = mtd->priv;
++	struct cfi_private *cfi = map->fldrv_priv;
++
++	if (!of_machine_is_compatible("huawei,hg8245") ||
++	    cfi->device_type != CFI_DEVICETYPE_X16 || cfi->interleave != 1)
++		return;
++	if (cfi->cfiq->DevSize == 24 && cfi->cfiq->ChipEraseTimeoutTyp &&
++	    cfi->cfiq->ChipEraseTimeoutMax && cfi->cfiq->MaxBufWriteSize != 10) {
++		pr_info("%s: 16 MiB AMD-cmdset chip, forcing MaxBufWriteSize %u -> 10 (vendor quirk)\n",
++			map->name, cfi->cfiq->MaxBufWriteSize);
++		cfi->cfiq->MaxBufWriteSize = 10;
++		mtd->writebufsize = 1U << cfi->cfiq->MaxBufWriteSize;
++	}
++}
++
+ static struct cfi_fixup cfi_fixup_table[] = {
+ 	{ CFI_MFR_ATMEL, CFI_ID_ANY, fixup_convert_atmel_pri },
+ #ifdef AMD_BOOTLOC_BUG
+@@ -483,6 +511,7 @@
+ 	{ CFI_MFR_SST, 0x536b, fixup_sst38vf640x_sectorsize }, /* SST38VF6401 */
+ 	{ CFI_MFR_SST, 0x536c, fixup_sst38vf640x_sectorsize }, /* SST38VF6404 */
+ 	{ CFI_MFR_SST, 0x536d, fixup_sst38vf640x_sectorsize }, /* SST38VF6403 */
++	{ CFI_MFR_AMD, CFI_ID_ANY, fixup_sd5113_bufsize },
+ #if !FORCE_WORD_WRITE
+ 	{ CFI_MFR_ANY, CFI_ID_ANY, fixup_use_write_buffers },
+ #endif

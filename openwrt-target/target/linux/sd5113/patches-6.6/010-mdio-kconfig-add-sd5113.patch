@@ -1,0 +1,21 @@
+--- a/drivers/net/mdio/Kconfig	2026-09-13 21:33:09.428584715 +0000
++++ b/drivers/net/mdio/Kconfig	2026-09-13 21:33:00.598203502 +0000
+@@ -105,6 +105,18 @@
+ config MDIO_CAVIUM
+ 	tristate
+ 
++config MDIO_SD5113
++	tristate "HiSilicon SD5113 MDIO bus controller"
++	depends on ARCH_SD5113 || COMPILE_TEST
++	depends on OF_MDIO
++	help
++	  Support for the built-in hardware MDIO bus controller on the
++	  HiSilicon SD5113 SoC (Huawei HG8245 ONT/router). This is how
++	  the SoC talks to the external Atheros AR8316/AR8316e LAN
++	  switch chip - see drivers/net/mdio/mdio-sd5113.c for exactly
++	  what is confirmed vs unverified (protocol reverse-engineered,
++	  never tested on real hardware).
++
+ config MDIO_GPIO
+ 	tristate "GPIO lib-based bitbanged MDIO buses"
+ 	depends on MDIO_BITBANG

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+probe=hg8245_slicprobe
+module="/lib/modules/$(uname -r)/$probe.ko"
+mode="${1:-snapshot}"
+if [ "$#" -gt 0 ]; then shift; fi
+
+case "$mode" in
+	snapshot)
+		[ "$#" -eq 0 ] || exit 2
+		set --
+		;;
+	id|id-stock|id-gpio4-low|id-cold)
+		if [ "$#" -ne 1 ] || [ "$1" != tel-unplugged ]; then
+			echo "Disconnect both TEL plugs, then: hg8245-spi-audit $mode tel-unplugged" >&2
+			exit 2
+		fi
+		case "$mode" in
+			id) set -- tel_unplugged=1 ;;
+			id-stock) set -- tel_unplugged=1 stock_ctrl_cycle=1 ;;
+			id-gpio4-low) set -- tel_unplugged=1 stock_ctrl_cycle=1 gpio4_low_trial=1 ;;
+			id-cold) set -- tel_unplugged=1 stock_ctrl_cycle=1 stock_cold_cycle=1 ;;
+		esac
+		;;
+	*)
+		echo 'Usage: hg8245-spi-audit snapshot | {id|id-stock|id-gpio4-low|id-cold} tel-unplugged' >&2
+		exit 2
+		;;
+esac
+
+if grep -q "^$probe " /proc/modules || [ ! -r "$module" ]; then
+	echo "HG8245 SPI audit: module missing or already loaded" >&2
+	exit 1
+fi
+
+echo "HG8245 SPI audit: $mode"
+rc=0
+insmod "$module" "$@" || rc=$?
+dmesg | grep -F 'hg8245-slicprobe:' | tail -n 12
+if [ "$rc" -eq 0 ]; then
+	rmmod "$probe" || exit 1
+fi
+echo "HG8245 SPI audit: $mode done, status=$rc"
+exit "$rc"
