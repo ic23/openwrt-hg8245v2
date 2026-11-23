@@ -121,7 +121,18 @@ HG8245_CONFIG="$PWD/openwrt-target/config.sd5113_hg8245.rc12" HG8245_ARTIFACT_DI
 
 ## Repository layout
 
-- `openwrt-target/` contains the active drivers, device trees, kernel patches, telephony, GPON and LuCI packages, and the RC12 build configuration.
+### Where to find the RC12 sources
+
+`bsp/` preserves an early version of the board support code. For development, use the sources that the [build script](tools/build-hg8245-ram.sh) copies into OpenWrt 24.10.8. The [RC12 configuration](openwrt-target/config.sd5113_hg8245.rc12) selects the packages.
+
+| Component | Sources in this repository |
+| --- | --- |
+| SD5113 and board support | [Controller drivers, Ethernet MAC, and MDIO](openwrt-target/target/linux/sd5113/files-6.6/drivers/), [device trees, including USB and NOR](openwrt-target/target/linux/sd5113/files-6.6/arch/arm/boot/dts/hisilicon/), [kernel and AR8316 patches](openwrt-target/target/linux/sd5113/patches-6.6/) |
+| GPON and optics | [PLOAM/GEM driver](openwrt-target/package/kernel/sd5113-gpon-rx/), [OMCI agent](openwrt-target/package/network/sd5113-omcid/), [optical transceiver driver](openwrt-target/package/kernel/hpsf2120/) |
+| Telephony | [Le88266DLC driver, line profiles, and firmware](openwrt-target/package/kernel/le88266/), [ZSP voice DSP and PCM code](tools/hg8245-zsp/), [SIP](openwrt-target/package/utils/hg8245-sip/). The build script copies the ZSP sources into the Le88266 module. The [package recipe](openwrt-target/package/kernel/le88266/Makefile) pins the externally downloaded VoicePath source archive and its SHA-256. |
+| Network setup, LEDs, and LuCI | [Board defaults and upgrade scripts](openwrt-target/target/linux/sd5113/base-files/), [LED service and LuCI packages](openwrt-target/package/utils/) |
+
+The base OpenWrt and Linux kernel trees supply the `ath9k` Wi-Fi driver and the EHCI/OHCI USB drivers. The device trees and RC12 configuration supply the board-specific settings.
 - `tools/` contains the build, packaging, image verification, and test scripts. `firmware_current/tools/` contains the reader for Huawei’s stock SquashFS. Some research tests expect modules extracted from `V100R003C00SPC106B176`.
-- `validation/` contains the RC12 installation guide, hardware test results, and board notes. The [Ethernet, timer, and watchdog notes](firmware_current/extracted/README.md) document stock register use and its relationship to RC12. `bsp/` contains early board support code.
+- `validation/` contains the RC12 installation guide, hardware test results, and board notes. The [Ethernet, timer, and watchdog notes](firmware_current/extracted/README.md) document stock register use and its relationship to RC12.
 - `artifacts/hg8245v2-rc12/` contains the verified release files. Store personal NOR dumps, BoardInfo, configuration backups, and calibration data separately.

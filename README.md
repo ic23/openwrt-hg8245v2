@@ -121,7 +121,18 @@ HG8245_CONFIG="$PWD/openwrt-target/config.sd5113_hg8245.rc12" HG8245_ARTIFACT_DI
 
 ## Структура
 
-- `openwrt-target/` — активные драйверы, DTS, патчи ядра, пакеты телефонии, GPON и LuCI, конфигурация сборки RC12.
+### Где лежат исходники RC12
+
+В `bsp/` сохранена ранняя версия поддержки платы. Для разработки используйте дерево, которое [скрипт сборки](tools/build-hg8245-ram.sh) переносит в OpenWrt 24.10.8. Набор пакетов задаёт [конфигурация RC12](openwrt-target/config.sd5113_hg8245.rc12).
+
+| Компонент | Исходники в репозитории |
+| --- | --- |
+| SD5113 и плата | [Драйверы контроллеров, Ethernet MAC и MDIO](openwrt-target/target/linux/sd5113/files-6.6/drivers/), [деревья устройств, включая USB и NOR](openwrt-target/target/linux/sd5113/files-6.6/arch/arm/boot/dts/hisilicon/), [патчи ядра и AR8316](openwrt-target/target/linux/sd5113/patches-6.6/) |
+| GPON и оптика | [Драйвер PLOAM/GEM](openwrt-target/package/kernel/sd5113-gpon-rx/), [агент OMCI](openwrt-target/package/network/sd5113-omcid/), [драйвер оптического модуля](openwrt-target/package/kernel/hpsf2120/) |
+| Телефония | [Le88266DLC, профили линий и микрокод](openwrt-target/package/kernel/le88266/), [драйверная часть голосового DSP ZSP и PCM](tools/hg8245-zsp/), [SIP](openwrt-target/package/utils/hg8245-sip/). Сборщик копирует исходники ZSP в модуль Le88266. Версия и SHA-256 загружаемой библиотеки VoicePath указаны в [рецепте пакета](openwrt-target/package/kernel/le88266/Makefile). |
+| Сетевые настройки, индикаторы и LuCI | [Файлы платы и обновления](openwrt-target/target/linux/sd5113/base-files/), [служба индикаторов и пакеты LuCI](openwrt-target/package/utils/) |
+
+Драйвер Wi-Fi `ath9k` и драйверы USB EHCI/OHCI берутся из базового дерева OpenWrt и ядра Linux. Параметры конкретной платы задаются в DTS и конфигурации RC12.
 - `tools/` — сборка, упаковка, проверка образов и тесты. `firmware_current/tools/` содержит читатель заводской SquashFS. Часть исследовательских тестов ожидает извлечённые модули `V100R003C00SPC106B176`.
-- `validation/` — инструкция RC12, результаты аппаратных испытаний и сведения о плате. Сведения о регистрах заводской прошивки и их использовании в RC12 собраны в [справке по Ethernet, таймерам и watchdog](firmware_current/extracted/README.md). `bsp/` содержит ранние исходники платы.
+- `validation/` — инструкция RC12, результаты аппаратных испытаний и сведения о плате. Сведения о регистрах заводской прошивки и их использовании в RC12 собраны в [справке по Ethernet, таймерам и watchdog](firmware_current/extracted/README.md).
 - `artifacts/hg8245v2-rc12/` — проверенные файлы текущего выпуска. Индивидуальные дампы NOR, BoardInfo, резервные копии настроек и калибровки храните отдельно.
