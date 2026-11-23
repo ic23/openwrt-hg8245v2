@@ -123,7 +123,7 @@ HG8245_CONFIG="$PWD/openwrt-target/config.sd5113_hg8245.rc12" HG8245_ARTIFACT_DI
 
 ### Where to find the RC12 sources
 
-`bsp/` preserves an early version of the board support code. For development, use the sources that the [build script](tools/build-hg8245-ram.sh) copies into OpenWrt 24.10.8. The [RC12 configuration](openwrt-target/config.sd5113_hg8245.rc12) selects the packages.
+Board support lives in the [SD5113 target](openwrt-target/target/linux/sd5113/). Kernel module packages and userspace services live in the [port’s package tree](openwrt-target/package/). The [build script](tools/build-hg8245-ram.sh) adds these sources to OpenWrt 24.10.8. The [RC12 configuration](openwrt-target/config.sd5113_hg8245.rc12) selects the packages.
 
 | Component | Sources in this repository |
 | --- | --- |
